@@ -1,0 +1,75 @@
+<pre class='metadata'>
+Title: Make native handles usable in the library
+Shortname: D1765
+Status: D
+Revision: 0
+Group: WG21
+URL: https://wg21.link/D1765R0
+!Audience: LEWGI
+!Source: <a href="https://github.com/eliaskosunen/wg21/blob/master/D1765R0.bs">github.com/eliaskosunen/wg21: D1765R0</a>
+Editor: Elias Kosunen, isocpp@eliaskosunen.com, https://eliaskosunen.com
+Date: 2019-08-18
+Abstract: This paper proposes unifying the rest of the native handles in the library with [[!P1759]].
+Repository: https://github.com/eliaskosunen/wg21
+Markup Shorthands: markdown yes
+</pre>
+
+Revision History {#history}
+===========================
+
+Revision 0 {#r0}
+----------------
+
+Initial revision
+
+Introduction {#intro}
+=====================
+
+During the feedback session for [[!P1759]] in LEWGI in Cologne (July 2019),
+it became apparent that the native handle facilities in `std::thread` and `std::mutex`
+are difficult to depend on.
+The reason for this is in how it is specified: the presence of these facilities is implementation-defined
+(from [[N4800]] [**thread.req.native**]:
+
+<blockquote>
+Several classes described in this Clause have members <code>native_handle_type</code> and <code>native_handle</code>.
+<b>The presence of these members</b> and their semantics <b>is implementation-defined.</b>
+[ <i>Note:</i> These members allow implementations to provide access to implementation details.
+Their names are specified to facilitate portable compile-time detection.
+Actual use of these members is inherently non-portable.
+&mdash; <i>end note</i> ]
+</blockquote>
+
+The same situation is present in the Networking TS (from [[N4734]] [**socket.reqmts.native**]):
+
+<blockquote>
+Several classes described in this document have a member type
+<code>native_handle_type</code>, a member function <code>native_handle</code>,
+and member functions that return or accept arguments of type <code>native_handle_type</code>.
+<b>The presence of these members</b> and their semantics <b>is implementation-defined.</b>
+
+When an operation has its effects specified as if by passing the result of <code>native_handle()</code>
+to a POSIX function the effect is as if <code>native_handle_type</code> is the type <code>int</code>.
+
+[ <i>Note:</i> These members allow implementations to provide access to their implementation details.
+Their names are specified to facilitate portable compile-time detection.
+Actual use of these members is inherently non-portable.
+For operating systems that are based on POSIX, implementations can define the <code>native_handle_type</code>
+for sockets as <code>int</code>, representing the native file descriptor associated with the socket.
+&mdash; <i>end note</i> ]
+</blockquote>
+
+
+
+<pre class="biblio">
+{
+    "P1759": {
+        "title": "Native handle from file streams",
+        "href": "https://wg21.link/p1759",
+        "authors": [
+            "Elias Kosunen"
+        ],
+        "publisher": "WG21"
+    }
+}
+</pre>

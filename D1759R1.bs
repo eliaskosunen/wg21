@@ -1,0 +1,727 @@
+<pre class='metadata'>
+Title: Native handle from file streams
+Shortname: D1759
+Status: D
+Revision: 1
+Group: WG21
+URL: https://wg21.link/D1759R1
+Audience: LEWG
+!Source: <a href="https://github.com/eliaskosunen/wg21/blob/master/D1759R1.bs">github.com/eliaskosunen/wg21: D1759R1</a>
+Editor: Elias Kosunen, isocpp@eliaskosunen.com, https://eliaskosunen.com
+Date: 2019-07-22
+Abstract: This paper proposes adding functionality to <code>fstream</code> and <code>filebuf</code> to retrieve the native file handle.
+Repository: https://github.com/eliaskosunen/wg21
+Markup Shorthands: markdown yes
+</pre>
+
+Revision History {#history}
+===========================
+
+Revision 1 (Draft) {#r1}
+------------------------
+
+  * Make <code>native_handle_type</code> be standard layout
+  * Add precondition (<code>is_open() == true</code>) to <code>.native_handle()</code>
+  * Add feature test macro <code>__cpp_lib_fstream_native_handle</code>
+  * Fix errors with opening the file with POSIX APIs in Motivation (see, we need this paper, fstreams are easier to open correctly!)
+  * Add additional motivating use case in vectored/scatter-gather IO
+  * <code>Regular</code> -> <code>regular</code>
+
+Incorporate LEWGI feedback from Cologne (July 2019):
+  
+  * Move to a member function and member typedef
+  * Make <code>native_handle</code> return value not be mandated to be unique
+  * Add note about how the presence of the members is required, and not implementation-defined (like for thread)
+
+<b>LEWGI Polls from Cologne:</b>
+
+<i>Attendance</i>: 21
+
+<i>We should promise more committee time pursuing P1759,
+knowing that our time is scarce and this will leave less time for other work.</i>
+
+<table>
+<thead>
+<tr>
+<td>SF</td>
+<td>F</td>
+<td>N</td>
+<td>A</td>
+<td>SA</td>
+</tr>
+</thead>
+<tbody>
+<td>3</td>
+<td>7</td>
+<td>6</td>
+<td>1</td>
+<td>0</td>
+</tbody>
+</table>
+
+<i>Knowing what we know now,
+we should promise more committee time to pursuing a <u>unifying native handle type</u> for the standard library,
+knowing that our time is scarce and this will leave less time for other work.</i>
+
+<table>
+<thead>
+<tr>
+<td>SF</td>
+<td>F</td>
+<td>N</td>
+<td>A</td>
+<td>SA</td>
+</tr>
+</thead>
+<tbody>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>6</td>
+<td>5</td>
+</tbody>
+</table>
+
+SA: Implementers had concerns with inability to add new native handle types without breaking ABI.
+
+<i>Member function (MF) vs free function (FF) addded to stream classes.</i>
+
+<table>
+<thead>
+<tr>
+<td>SMF</td>
+<td>MF</td>
+<td>N</td>
+<td>FF</td>
+<td>SFF</td>
+</tr>
+</thead>
+<tbody>
+<td>2</td>
+<td>9</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+</tbody>
+</table>
+
+SFF: Member function bad, free function good
+
+<i>The native handle type and native handle member function should always exist (they may return an invalid handle).</i>
+
+<table>
+<thead>
+<tr>
+<td>SF</td>
+<td>F</td>
+<td>N</td>
+<td>A</td>
+<td>SA</td>
+</tr>
+</thead>
+<tbody>
+<td colspan="5">UNANIMOUS CONSENT</td>
+</tbody>
+</table>
+
+An implementer had concerns how this paper wouldn't be useful if native handles were as underspecified as they are with `thread`.
+
+<i>Forward P1759, with a member function API that is always defined,
+to LEWG for C++23, knowing that our time is scarce and this will leave less time for other work.</i>
+
+<table>
+<thead>
+<tr>
+<td>SF</td>
+<td>F</td>
+<td>N</td>
+<td>A</td>
+<td>SA</td>
+</tr>
+</thead>
+<tbody>
+<td>3</td>
+<td>10</td>
+<td>2</td>
+<td>2</td>
+<td>0</td>
+</tbody>
+</table>
+
+Revision 0 {#r0}
+----------------
+Initial revision.
+
+Overview {#overview}
+=====================
+
+This paper proposes adding a new typedef to standard file streams: `native_handle_type`.
+This type is an alias to whatever type the platform uses for its file descriptors:
+`int` on POSIX, `HANDLE` (`void*`) on Windows, and something else on other platforms.
+This type is a non-owning handle and is to be small, `Regular`, standard layout, and trivially copyable.
+
+Alongside this, this paper proposes adding a concrete member function: `.native_handle()`,
+returning a `native_handle_type`, to the following class templates:
+
+ * `basic_filebuf`
+ * `basic_ifstream`
+ * `basic_ofstream`
+ * `basic_fstream`
+
+Motivation {#motivation}
+========================
+
+For some operations, using OS/platform-specific file APIs is necessary.
+If this is the case, they are unable to use iostreams without reopening the file with the platform-specific APIs.
+
+For example, if someone wanted to query the time a file was last modified on POSIX, they'd use `::fstat`, which takes a file descriptor:
+
+```cpp
+int fd = ::open("~/foo.txt", O_RDONLY);
+::stat s{};
+int err = ::fstat(fd, &s);
+std::chrono::sys_seconds last_modified = std::chrono::seconds(s.st_mtime.tv_sec);
+```
+
+Note: The Filesystem TS introduced the `file_status` structure and `status` function retuning one.
+This doesn't solve our problem, because `std::filesystem::status` takes a path, not a native file descriptor
+(using paths is potentially racy),
+and `std::filesystem::file_status` only contains member functions `type()` and `permissions()`,
+not one for last time of modification.
+Extending this structure is out of scope for this proposal,
+and not feasible for every single possible operation the user may wish to do with OS APIs.
+
+If the user needs to do a single operation not supported by the standard library,
+they have to make choice between only using OS APIs, or reopening the file every time necessary,
+likely forgetting to close the file, or running into buffering or synchronization issues.
+
+```cpp
+// Writing the latest modification date to a file
+std::chrono::sys_seconds last_modified(int fd) {
+    // See above
+}
+
+// Today's code
+
+// Option #1:
+// Use iostreams by reopening the file
+{
+    int fd = ::open("~/foo.txt", O_RDONLY); // CreateFile on Windows
+    auto lm = last_modified(fd);
+
+    ::close(fd); // CloseFile on Windows
+    // Hope the path still points to the file!
+    // Need to allocate 
+    std::ofstream of("~/foo.txt");
+    of << std::chrono::format("%c", lm) << '\n';
+    // Need to flush
+}
+
+// Option #2:
+// Abstain from using iostreams altogether
+{
+    int fd = ::open("~/foo.txt", O_RDWR);
+    auto lm = last_modified(fd);
+
+    // Using ::write() is clunky;
+    // skipping error handling for brevity
+    auto str = std::chrono::format("%c", lm);
+    str.push_back('\n');
+    ::write(fd, str.data(), str.size());
+    // Remember to close!
+    // Hope format or push_back doesn't throw
+    ::close(fd);
+}
+
+// This proposal
+// No need to use platform-specific APIs to open the file
+{
+    std::ofstream of("~/foo.txt");
+    auto lm = last_modified(of.native_handle());
+    of << std::chrono::format("%c", lm) << '\n';
+    // RAII does ownership handling for us
+}
+```
+
+The utility of getting a file descriptor (or other native file handle) is not limited to getting the last modification date.
+Other examples include, but are definitely not limited to:
+ * file locking (`fcntl()` + `F_SETLK` on POSIX, `LockFile` on Windows)
+ * getting file status flags (`fcntl()` + `F_GETFL` on POSIX, `GetFileInformationByHandle` on Windows)
+ * vectored/scatter-gather IO (`vread()`/`vwrite()`)
+ * non-blocking IO (`fcntl()` + `O_NONBLOCK`/`F_SETSIG` on POSIX)
+
+Basically, this paper would make standard file streams interoperable with operating system interfaces,
+making iostreams more useful in that regard.
+
+An alternative would be adding a lot of this functionality to `fstream` and `filesystem`.
+The problem is, that some of this behavior is inherently platform-specific.
+For example, getting the inode of a file is something that only makes sense on POSIX,
+so cannot be made part of the `fstream` interface, and is only accessible through the native file descriptor.
+
+Facilities replacing iostreams, although desirable, are not going to be available in the standard in the near future.
+The author, alongside many others, would thus find this functionality useful.
+
+Scope {#scope}
+==============
+
+This paper does *not* propose constructing a file stream or stream buffer from a native file handle.
+The author is worried of ownership and implementation issues possibly associated with this design.
+
+```cpp
+// NOT PROPOSED
+#include <fstream>
+#include <fcntl.h>
+
+auto fd = ::open(/* ... */);
+auto f = std::fstream{fd};
+```
+
+This paper also does not touch anything related to `FILE*`.
+
+Design Discussion {#design}
+===========================
+
+See polls in [[#history]] for more details
+
+Type of `native_handle_type` {#handle-type}
+-------------------------------------------
+
+In this paper, the definition for <code>native_handle_type</code> is *much* more strict than in <code>thread</code>.
+For reference, this is the wording from <i>32.2.3 Native handles</i> [**thread.req.native**], from [[N4800]]:
+
+<blockquote>
+Several classes described in this Clause have members <code>native_handle_type</code> and <code>native_handle</code>.
+The presence of these members and their semantics is implementation-defined.
+[ <i>Note:</i> These members allow implementations to provide access to implementation details.
+Their names are specified to facilitate portable compile-time detection.
+Actual use of these members is inherently non-portable.
+&mdash; <i>end note</i> ]
+</blockquote>
+
+During the review of R0 of this paper in Cologne by LEWGI, an implementor mentioned how having the same specification here
+would make this paper effectively useless.
+Having the presence of a member be implementation-defined without a feature detect macro was deemed as bad design,
+which should not be replicated in this paper.
+
+The proposed alternative in this paper, as directed by LEWGI,
+is allowing a conforming implementation to return an invalid native file handle, if it cannot be retrieved.
+
+Member function vs free function {#member-or-free}
+--------------------------------------------------
+
+R0 of this paper had a free function <code>std::native_file_handle()</code> instead of a member function,
+due to possible ABI-related concerns.
+This turned out not to be an issue, so the design was changed to be a member function, for consistency with `thread`.
+
+Precondition {#precond}
+-----------------------
+
+The member function `.native_handle()`, as specified in this paper, has a precondition of `.is_open() == true`.
+The precondition is specified with "Expects", so breaking it would be UB, and in practice enforced with an assert.
+An alternative to this would be throwing if the file is not open, or returning some unspecified invalid handle.
+
+Impact On the Standard and Existing Code {#impact}
+==================================================
+
+This proposal is a pure library extension, requiring no changes to the core language.
+It would cause no existing conforming code to break.
+
+Implementation {#implementation}
+================================
+
+Implementing this paper should be a relatively trivial task.
+
+Although all implementations surveyed (libstdc++, libc++ and MSVC) use `FILE*`
+instead of native file descriptors in their `basic_filebuf` implementations,
+these platforms provide facilites to get a native handle from a `FILE*`;
+`fileno` on POSIX, and `_fileno` + `_get_osfhandle` on Windows.
+The following reference implementations use these.
+
+For libstdc++ on Linux:
+
+```cpp
+template <class CharT, class Traits>
+class basic_filebuf {
+    // ...
+    using native_handle_type = int;
+    // ...
+    native_handle_type native_handle() {
+        assert(is_open());
+        // _M_file (__basic_file<char>) has a member function for this purpose
+        return _M_file.fd();
+        // ::fileno(file.file()) could also be used
+    }
+    // ...
+}
+
+// (i|o)fstream implementation is trivial with rdbuf()
+```
+
+For libc++ on Linux:
+
+```cpp
+template <class CharT, class Traits>
+class basic_filebuf {
+    // ...
+    using native_handle_type = int;
+    // ...
+    native_handle_type native_handle() {
+        assert(is_open());
+        // __file_ is a FILE*
+        return ::fileno(__file_)
+    }
+    // ...
+}
+
+// (i|o)fstream implementation is trivial with rdbuf()
+```
+
+For MSVC:
+
+```cpp
+template <class CharT, class Traits>
+class basic_filebuf {
+    // ...
+    using native_handle_type = HANDLE;
+    // ...
+    native_handle_type native_handle() {
+        assert(is_open());
+        // _Myfile is a FILE*
+        auto cfile = ::_fileno(_Myfile);
+        // _get_osfhandle returns intptr_t, HANDLE is a void*
+        return static_cast<HANDLE>(::_get_osfhandle(cfile));
+    }
+    // ...
+}
+
+// (i|o)fstream implementation is trivial with rdbuf()
+```
+
+Prior Art {#prior-art}
+======================
+
+[[Boost.IOStreams]] provides `file_descriptor`, `file_descriptor_source`, and `file_descriptor_sink`, which,
+when used in conjunction with `stream_buffer`, are `std::basic_streambuf`s using a file descriptor.
+These classes can be constructed from a path or a native handle (`int` or `HANDLE`) and can also return it with member function `handle()`.
+
+The Networking TS [[N4734]] has members `native_handle_type` and `.native_handle()`
+in numerous places, including `std::net::socket`.
+It specifies (in [**socket.reqmts.native**]) the presence of these members in a similar fashion to `thread`,
+as in making their presence implementation-defined.
+It does, however, recommend POSIX-based systems to use `int` for this purpose.
+
+Niall Douglas's [[P1031]] also defined a structure `native_handle_type` with an extensive interface and a member `union` with an `int` and a `HANDLE`, with a constructor taking either one of these.
+
+Discussion {#discussion}
+------------------------
+
+There has been some discussion over the years about various things relating to this issue,
+but as far as the author is aware, no concrete proposal has ever been submitted.
+
+There have been a number of threads on std-discussion and std-proposals:
+[[std-proposals-native-handle]], [[std-discussion-fd-io]], [[std-proposals-native-raw-io]], [[std-proposals-fd-access]].
+The last one of these lead to a draft paper, that was never submitted: [[access-file-descriptors]].
+
+The consensus that the author took from these discussions is, that native handle support for iostreams would be very much welcome.
+
+An objection was raised by Billy O'Neal to being able to retrieve a native file handle from a standard file stream:
+
+<blockquote>
+[This] also would need to mandate that the C++ streams be implemented directly such that there was a 1:1 native handle relationship, which may not be the case.
+For instance, a valid implementation of C++ iostreams would be on top of cstdio, which would not have any kind of native handle to expose.
+
+ &ndash; Billy O'Neal: [[std-proposals-billy-oneal]]
+</blockquote>
+
+Every implementation surveyed did implement `basic_filebuf` on top of C stdio, but these platforms also provide functionality for getting a file descriptor out of a `FILE*`.
+On every platform, file I/O is ultimately implemented on top of native APIs, so not providing access to a file descriptor from a `FILE*` would be rather unfortunate.
+Should such a platform exist, they probably don't have a conforming C++ implementation anyway.
+See [[#implementation]] for more.
+
+Additionally, as directed by LEWGI, <code>.native_handle()</code> can just return an invalid handle,
+if the implementation really can't get a valid one corresponding to the file.
+
+Existing precendent for presence of <code>native_handle</code> {#precendent}
+----------------------------------------------------------------------------
+
+<table>
+<thead>
+<tr>
+<td>Types <i>with</i> a standard way of getting the native handle</td>
+<td>Types <i>without</i> a standard way of getting the native handle</td>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>
+<ul>
+<li><code>std::thread</code></li>
+<li><code>std::mutex</code></li>
+<li>Networking TS [[N4734]] types (e.g. <code>std::net::socket</code>)</li>
+</ul>
+
+Proposals:
+<ul>
+<li>Low level file I/O [[P1031]]</li>
+</ul>
+</td>
+<td>
+<ul>
+<li><b><code>std::fstream</code>/<code>std::filebuf</code></b></li>
+<li><code>FILE*</code></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+
+Technical Specifications {#standardese}
+=======================================
+
+The wording is based on [[N4800]].
+
+<ins>Add</ins> the following row into <i>Table 36: Standard library feature-test macros</i> [**tab:support.ft**]
+in [**support.limits.general**]:
+
+<blockquote>
+<table>
+<tbody>
+<tr>
+<td><tt>__cpp_lib_filesystem</tt></td>
+<td><tt>201703L</tt></td>
+<td><tt>&lt;filesystem&gt;</tt></td>
+</tr>
+
+<tr>
+<td><tt><ins>__cpp_lib_fstream_native_handle</ins></tt></td>
+<td><tt><ins>*TBD*</ins></tt></td>
+<td><tt><ins>&lt;fstream&gt;</ins></tt></td>
+</tr>
+
+<tr>
+<td><tt>__cpp_lib_gcd_lcm</tt></td>
+<td><tt>201606L</code></tt>
+<td><tt>&lt;numeric&gt;</tt></td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+
+<ins>Add</ins> the following subsection (?) into <i>File-based streams</i> [**file.streams**], after [**fstream.syn**].
+
+<i>Note to editor:</i> Replace ? with the appropriate section number.
+
+<blockquote>
+<h3 class="no-num" id="file.native">? Native handles [**file.native**]</h3>
+Several classes described in this section have a member <code>native_handle_type</code>.
+
+The type <code>native_handle_type</code> serves as a type representing a platform-specific handle to a file.
+It satisfies the requirements of <code>regular</code>, and is trivially copyable and standard layout.
+
+[ <i>Note:</i> For operating systems based on POSIX, <code>native_handle_type</code> should be <code>int</code>.
+For Windows-based operating systems, it should be <code>HANDLE</code>. &mdash; <i>end note</i> ]
+</blockquote>
+
+<ins>Add</ins> the following into <i>Class template <code>basic_filebuf</code></i> [**filebuf**]:
+
+<blockquote>
+<xmp highlight="cpp">
+namespace std {
+    template<class charT, class traits = char_traits<charT>>
+    class basic_filebuf : public basic_streambuf<charT, traits> {
+    public:
+        // Note: Add after other member typedefs
+        using native_handle_type = implementation-defined; // see [file.native]
+
+        // Note: Add as the last [filebuf.members]
+        native_handle_type native_handle();
+
+        // ...
+    }
+}
+</xmp>
+</blockquote>
+
+<span style="color: #cccc00; text-decoration: underline;">Modify</span>
+paragraph &sect; 1 of <i>Class template <code>basic_filebuf</code></i> [**filebuf**]:
+
+<blockquote>
+The class <code>basic_filebuf&lt;charT, traits></code> associates both the input sequence and the output sequence with a file.
+<ins>
+The file has an associated <code>native_handle_type</code>.
+Whether the associated <code>native_handle_type</code> is
+unique for each instance of a <code>basic_filebuf</code>, is implementation-defined.
+[ <i>Note:</i> This differs from thread native handles [thread.req.native],
+the presence of which is implementation-defined. &mdash; <i>end note</i> ]
+</ins>
+</blockquote>
+
+<ins>Add</ins> the following to the end of <i>Member functions</i> [**filebuf.members**]:
+
+<blockquote>
+```cpp
+native_handle_type native_handle();
+```
+
+*Expects:* <code>is_open()</code> is <code>true</code>.
+
+*Throws:* Nothing.
+
+*Returns:* The <code>native_handle_type</code> associated with the underlying file of <code>*this</code>.
+</blockquote>
+
+<ins>Add</ins> the following into <i>Class template <code>basic_ifstream</code></i> [**ifstream**]:
+
+<blockquote>
+<xmp highlight="cpp">
+namespace std {
+    template<class charT, class traits = char_traits<charT>>
+    class basic_ifstream : public basic_istream<charT, traits> {
+    public:
+        // Note: Add after other member typedefs
+        using native_handle_type =
+            typename basic_filebuf<charT, traits>::native_handle_type;
+
+        // Note: Add as the last [ifstream.members]
+        native_handle_type native_handle();
+
+        // ...
+    }
+}
+</xmp>
+</blockquote>
+
+<ins>Add</ins> the following to the end of <i>Member functions</i> [**ifstream.members**]:
+
+<blockquote>
+```cpp
+native_handle_type native_handle();
+```
+
+*Effects:* Equivalent to: <code>return rdbuf()->native_handle();</code>.
+</blockquote>
+
+<ins>Add</ins> the following into <i>Class template <code>basic_ofstream</code></i> [**ofstream**]:
+
+<blockquote>
+<xmp highlight="cpp">
+namespace std {
+    template<class charT, class traits = char_traits<charT>>
+    class basic_ofstream : public basic_ostream<charT, traits> {
+    public:
+        // Note: Add after other member typedefs
+        using native_handle_type =
+            typename basic_filebuf<charT, traits>::native_handle_type;
+
+        // Note: Add as the last [ofstream.members]
+        native_handle_type native_handle();
+
+        // ...
+    }
+}
+</xmp>
+</blockquote>
+
+<ins>Add</ins> the following to the end of <i>Member functions</i> [**ofstream.members**]:
+
+<blockquote>
+```cpp
+native_handle_type native_handle();
+```
+
+*Effects:* Equivalent to: <code>return rdbuf()->native_handle();</code>.
+</blockquote>
+
+<ins>Add</ins> the following into <i>Class template <code>basic_fstream</code></i> [**fstream**]:
+
+<blockquote>
+<xmp highlight="cpp">
+namespace std {
+    template<class charT, class traits = char_traits<charT>>
+    class basic_fstream : public basic_iostream<charT, traits> {
+    public:
+        // Note: Add after other member typedefs
+        using native_handle_type =
+            typename basic_filebuf<charT, traits>::native_handle_type;
+
+        // Note: Add as the last [fstream.members]
+        native_handle_type native_handle();
+
+        // ...
+    }
+}
+</xmp>
+</blockquote>
+
+<ins>Add</ins> the following to the end of <i>Member functions</i> [**fstream.members**]:
+
+<blockquote>
+```cpp
+native_handle_type native_handle();
+```
+
+*Effects:* Equivalent to: <code>return rdbuf()->native_handle();</code>.
+</blockquote>
+
+Acknowledgements {#acknowledgements}
+====================================
+
+Thanks to Niall Douglas for feedback, encouragement and ambitious suggestions for this paper.
+
+Thanks to the rest of the co-authors of [[P1750]] for the idea after cutting this functionality out,
+especially to Jeff Garland for providing a heads-up about a possible ABI-break that I totally would've missed,
+even though it ended up being a non-issue.
+
+<pre class="biblio">
+{
+    "P1750": {
+        "title": "A Proposal to Add Process Management to the C++ Standard Library",
+        "href": "https://wg21.link/p1750",
+        "authors": [
+            "Klemens Morgenstern, Jeff Garland, Elias Kosunen, Fatih Bakir"
+        ],
+        "publisher": "WG21"
+    },
+    "P1031": {
+        "title": "Low level file i/o library",
+        "href": "https://wg21.link/p1031",
+        "authors": [
+            "Niall Douglas"
+        ],
+        "publisher": "WG21"
+    },
+    "std-proposals-native-handle": {
+        "title": "native_handle for basic_filebuf",
+        "href": "https://groups.google.com/a/isocpp.org/d/topic/std-proposals/oCEErQbI9sM/discussion"
+    },
+    "std-discussion-fd-io": {
+        "title": "File descriptor-backed I/O stream?",
+        "href": "https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/macDvhFDrjU"
+    },
+    "std-proposals-native-raw-io": {
+        "title": "Native raw IO and FILE* wrappers?",
+        "href": "https://groups.google.com/a/isocpp.org/d/topic/std-proposals/Q4RdFSZggSE/discussion"
+    },
+    "std-proposals-fd-access": {
+        "title": "file streams and access to the file descriptor",
+        "href": "https://groups.google.com/a/isocpp.org/d/topic/std-proposals/XcQ4FZJKDbM/discussion"
+    },
+    "access-file-descriptors": {
+        "title": "file streams and access to the file descriptor",
+        "href":
+        "https://docs.google.com/viewer?a=v&pid=forums&srcid=MTEwODAzNzI2MjM1OTc0MjE3MjkBMDY0OTY1OTUzMjAwNzY0MTA0MjkBakhWMHBFLUNGd0FKATAuMQFpc29jcHAub3JnAXYy&authuser=0",
+        "authors": [ "Bruce S. O. Adams" ]
+    },
+    "std-proposals-billy-oneal": {
+        "title": "Comment on 'native_handle for basic_filebuf'",
+        "href": "https://groups.google.com/a/isocpp.org/d/msg/std-proposals/oCEErQbI9sM/rMkAMOkxFvMJ",
+        "authors": [ "Billy O'Neal" ]
+    },
+    "Boost.IOStreams": {
+        "title": "Boost.IOStreams",
+        "href": "https://www.boost.org/doc/libs/1_70_0/libs/iostreams/doc/index.html",
+        "authors": [ "Jonathan Turkanis" ]
+    }
+}
+</pre>
