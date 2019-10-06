@@ -1,9 +1,21 @@
-## P1759: Native handle from file streams
+My C++ standards committee papers.
 
-[R0](https://github.com/eliaskosunen/wg21/blob/master/P1759R0.bs): https://wg21.link/p1759r0
+## Hosted here
 
-## P1750: A Proposal to Add Process Management to the C++ Standard Library
+### P1759: Native handle from file streams
 
-See https://github.com/liaw2019-process
+[R1](https://github.com/eliaskosunen/wg21/blob/master/P1759R1.bs): https://wg21.link/p1759
+
+## Not hosted here
+
+### P1729: Text Parsing
+
+See https://github.com/fmtlib/fmtlib.github.io
+
+https://wg21.link/p1729
+
+### P1750: A Proposal to Add Process Management to the C++ Standard Library
+
+See https://github.com/JeffGarland/liaw2019-process
 
 https://wg21.link/p1750
