@@ -6,6 +6,10 @@ My C++ standards committee papers.
 
 [R1](https://github.com/eliaskosunen/wg21/blob/master/P1759R1.bs): https://wg21.link/p1759
 
+### P1977: LEWG Policy on handling errors with OS resource creation
+
+### P2001: Reconsidering a null-terminated string view
+
 ## Not hosted here
 
 ### P1729: Text Parsing
