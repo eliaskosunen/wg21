@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="mpark/wg21" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2022-10-09" />
+  <title>Native handles and file streams</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+      div.csl-block{margin-left: 1.5em;}
+      ul.task-list{list-style: none;}
+      pre > code.sourceCode { white-space: pre; position: relative; }
+      pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+      pre > code.sourceCode > span:empty { height: 1.2em; }
+      .sourceCode { overflow: visible; }
+      code.sourceCode > span { color: inherit; text-decoration: inherit; }
+      div.sourceCode { margin: 1em 0; }
+      pre.sourceCode { margin: 0; }
+      @media screen {
+      div.sourceCode { overflow: auto; }
+      }
+      @media print {
+      pre > code.sourceCode { white-space: pre-wrap; }
+      pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+      }
+      pre.numberSource code
+        { counter-reset: source-line 0; }
+      pre.numberSource code > span
+        { position: relative; left: -4em; counter-increment: source-line; }
+      pre.numberSource code > span > a:first-child::before
+        { content: counter(source-line);
+          position: relative; left: -1em; text-align: right; vertical-align: baseline;
+          border: none; display: inline-block;
+          -webkit-touch-callout: none; -webkit-user-select: none;
+          -khtml-user-select: none; -moz-user-select: none;
+          -ms-user-select: none; user-select: none;
+          padding: 0 4px; width: 4em;
+          color: #aaaaaa;
+        }
+      pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+      div.sourceCode
+        {  background-color: #f6f8fa; }
+      @media screen {
+      pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+      }
+      code span { } /* Normal */
+      code span.al { color: #ff0000; } /* Alert */
+      code span.an { } /* Annotation */
+      code span.at { } /* Attribute */
+      code span.bn { color: #9f6807; } /* BaseN */
+      code span.bu { color: #9f6807; } /* BuiltIn */
+      code span.cf { color: #00607c; } /* ControlFlow */
+      code span.ch { color: #9f6807; } /* Char */
+      code span.cn { } /* Constant */
+      code span.co { color: #008000; font-style: italic; } /* Comment */
+      code span.cv { color: #008000; font-style: italic; } /* CommentVar */
+      code span.do { color: #008000; } /* Documentation */
+      code span.dt { color: #00607c; } /* DataType */
+      code span.dv { color: #9f6807; } /* DecVal */
+      code span.er { color: #ff0000; font-weight: bold; } /* Error */
+      code span.ex { } /* Extension */
+      code span.fl { color: #9f6807; } /* Float */
+      code span.fu { } /* Function */
+      code span.im { } /* Import */
+      code span.in { color: #008000; } /* Information */
+      code span.kw { color: #00607c; } /* Keyword */
+      code span.op { color: #af1915; } /* Operator */
+      code span.ot { } /* Other */
+      code span.pp { color: #6f4e37; } /* Preprocessor */
+      code span.re { } /* RegionMarker */
+      code span.sc { color: #9f6807; } /* SpecialChar */
+      code span.ss { color: #9f6807; } /* SpecialString */
+      code span.st { color: #9f6807; } /* String */
+      code span.va { } /* Variable */
+      code span.vs { color: #9f6807; } /* VerbatimString */
+      code span.wa { color: #008000; font-weight: bold; } /* Warning */
+      code.diff {color: #898887}
+      code.diff span.va {color: #006e28}
+      code.diff span.st {color: #bf0303}
+  </style>
+  <style type="text/css">
+body {
+margin: 5em;
+font-family: serif;
+
+hyphens: auto;
+line-height: 1.35;
+text-align: justify;
+}
+@media screen and (max-width: 30em) {
+body {
+margin: 1.5em;
+}
+}
+div.wrapper {
+max-width: 60em;
+margin: auto;
+}
+ul {
+list-style-type: none;
+padding-left: 2em;
+margin-top: -0.2em;
+margin-bottom: -0.2em;
+}
+a {
+text-decoration: none;
+color: #4183C4;
+}
+a.hidden_link {
+text-decoration: none;
+color: inherit;
+}
+li {
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+h1, h2, h3, h4 {
+position: relative;
+line-height: 1;
+}
+a.self-link {
+position: absolute;
+top: 0;
+left: calc(-1 * (3.5rem - 26px));
+width: calc(3.5rem - 26px);
+height: 2em;
+text-align: center;
+border: none;
+transition: opacity .2s;
+opacity: .5;
+font-family: sans-serif;
+font-weight: normal;
+font-size: 83%;
+}
+a.self-link:hover { opacity: 1; }
+a.self-link::before { content: "§"; }
+ul > li:before {
+content: "\2014";
+position: absolute;
+margin-left: -1.5em;
+}
+:target { background-color: #C9FBC9; }
+:target .codeblock { background-color: #C9FBC9; }
+:target ul { background-color: #C9FBC9; }
+.abbr_ref { float: right; }
+.folded_abbr_ref { float: right; }
+:target .folded_abbr_ref { display: none; }
+:target .unfolded_abbr_ref { float: right; display: inherit; }
+.unfolded_abbr_ref { display: none; }
+.secnum { display: inline-block; min-width: 35pt; }
+.header-section-number { display: inline-block; min-width: 35pt; }
+.annexnum { display: block; }
+div.sourceLinkParent {
+float: right;
+}
+a.sourceLink {
+position: absolute;
+opacity: 0;
+margin-left: 10pt;
+}
+a.sourceLink:hover {
+opacity: 1;
+}
+a.itemDeclLink {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+opacity: 0;
+}
+a.itemDeclLink:hover { opacity: 1; }
+span.marginalizedparent {
+position: relative;
+left: -5em;
+}
+li span.marginalizedparent { left: -7em; }
+li ul > li span.marginalizedparent { left: -9em; }
+li ul > li ul > li span.marginalizedparent { left: -11em; }
+li ul > li ul > li ul > li span.marginalizedparent { left: -13em; }
+div.footnoteNumberParent {
+position: relative;
+left: -4.7em;
+}
+a.marginalized {
+position: absolute;
+font-size: 75%;
+text-align: right;
+width: 5em;
+}
+a.enumerated_item_num {
+position: relative;
+left: -3.5em;
+display: inline-block;
+margin-right: -3em;
+text-align: right;
+width: 3em;
+}
+div.para { margin-bottom: 0.6em; margin-top: 0.6em; text-align: justify; }
+div.section { text-align: justify; }
+div.sentence { display: inline; }
+span.indexparent {
+display: inline;
+position: relative;
+float: right;
+right: -1em;
+}
+a.index {
+position: absolute;
+display: none;
+}
+a.index:before { content: "⟵"; }
+
+a.index:target {
+display: inline;
+}
+.indexitems {
+margin-left: 2em;
+text-indent: -2em;
+}
+div.itemdescr {
+margin-left: 3em;
+}
+.bnf {
+font-family: serif;
+margin-left: 40pt;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+}
+.ncbnf {
+font-family: serif;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+}
+.ncsimplebnf {
+font-family: serif;
+font-style: italic;
+margin-top: 0.5em;
+margin-bottom: 0.5em;
+margin-left: 40pt;
+background: inherit; 
+}
+span.textnormal {
+font-style: normal;
+font-family: serif;
+white-space: normal;
+display: inline-block;
+}
+span.rlap {
+display: inline-block;
+width: 0px;
+}
+span.descr { font-style: normal; font-family: serif; }
+span.grammarterm { font-style: italic; }
+span.term { font-style: italic; }
+span.terminal { font-family: monospace; font-style: normal; }
+span.nonterminal { font-style: italic; }
+span.tcode { font-family: monospace; font-style: normal; }
+span.textbf { font-weight: bold; }
+span.textsc { font-variant: small-caps; }
+a.nontermdef { font-style: italic; font-family: serif; }
+span.emph { font-style: italic; }
+span.techterm { font-style: italic; }
+span.mathit { font-style: italic; }
+span.mathsf { font-family: sans-serif; }
+span.mathrm { font-family: serif; font-style: normal; }
+span.textrm { font-family: serif; }
+span.textsl { font-style: italic; }
+span.mathtt { font-family: monospace; font-style: normal; }
+span.mbox { font-family: serif; font-style: normal; }
+span.ungap { display: inline-block; width: 2pt; }
+span.textit { font-style: italic; }
+span.texttt { font-family: monospace; }
+span.tcode_in_codeblock { font-family: monospace; font-style: normal; }
+span.phantom { color: white; }
+
+span.math { font-style: normal; }
+span.mathblock {
+display: block;
+margin-left: auto;
+margin-right: auto;
+margin-top: 1.2em;
+margin-bottom: 1.2em;
+text-align: center;
+}
+span.mathalpha {
+font-style: italic;
+}
+span.synopsis {
+font-weight: bold;
+margin-top: 0.5em;
+display: block;
+}
+span.definition {
+font-weight: bold;
+display: block;
+}
+.codeblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+.outputblock {
+margin-left: 1.2em;
+line-height: 127%;
+}
+div.itemdecl {
+margin-top: 2ex;
+}
+code.itemdeclcode {
+white-space: pre;
+display: block;
+}
+span.textsuperscript {
+vertical-align: super;
+font-size: smaller;
+line-height: 0;
+}
+.footnotenum { vertical-align: super; font-size: smaller; line-height: 0; }
+.footnote {
+font-size: small;
+margin-left: 2em;
+margin-right: 2em;
+margin-top: 0.6em;
+margin-bottom: 0.6em;
+}
+div.minipage {
+display: inline-block;
+margin-right: 3em;
+}
+div.numberedTable {
+text-align: center;
+margin: 2em;
+}
+div.figure {
+text-align: center;
+margin: 2em;
+}
+table {
+border: 1px solid black;
+border-collapse: collapse;
+margin-left: auto;
+margin-right: auto;
+margin-top: 0.8em;
+text-align: left;
+hyphens: none; 
+}
+td, th {
+padding-left: 1em;
+padding-right: 1em;
+vertical-align: top;
+}
+td.empty {
+padding: 0px;
+padding-left: 1px;
+}
+td.left {
+text-align: left;
+}
+td.right {
+text-align: right;
+}
+td.center {
+text-align: center;
+}
+td.justify {
+text-align: justify;
+}
+td.border {
+border-left: 1px solid black;
+}
+tr.rowsep, td.cline {
+border-top: 1px solid black;
+}
+tr.even, tr.odd {
+border-bottom: 1px solid black;
+}
+tr.capsep {
+border-top: 3px solid black;
+border-top-style: double;
+}
+tr.header {
+border-bottom: 3px solid black;
+border-bottom-style: double;
+}
+th {
+border-bottom: 1px solid black;
+}
+span.centry {
+font-weight: bold;
+}
+div.table {
+display: block;
+margin-left: auto;
+margin-right: auto;
+text-align: center;
+width: 90%;
+}
+span.indented {
+display: block;
+margin-left: 2em;
+margin-bottom: 1em;
+margin-top: 1em;
+}
+ol.enumeratea { list-style-type: none; background: inherit; }
+ol.enumerate { list-style-type: none; background: inherit; }
+
+code.sourceCode > span { display: inline; }
+</style>
+  <link href="data:image/x-icon;base64,AAABAAIAEBAAAAEAIABoBAAAJgAAACAgAAABACAAqBAAAI4EAAAoAAAAEAAAACAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAVoJEAN6CRADegkQAWIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wCCRAAAgkQAAIJEAACCRAAsgkQAvoJEAP+CRAD/gkQA/4JEAP+CRADAgkQALoJEAACCRAAAgkQAAP///wD///8AgkQAAIJEABSCRACSgkQA/IJEAP99PQD/dzMA/3czAP99PQD/gkQA/4JEAPyCRACUgkQAFIJEAAD///8A////AHw+AFiBQwDqgkQA/4BBAP9/PxP/uZd6/9rJtf/bybX/upd7/39AFP+AQQD/gkQA/4FDAOqAQgBc////AP///wDKklv4jlEa/3o7AP+PWC//8+3o///////////////////////z7un/kFox/35AAP+GRwD/mVYA+v///wD///8A0Zpk+NmibP+0d0T/8evj///////+/fv/1sKz/9bCs//9/fr//////+/m2/+NRwL/nloA/5xYAPj///8A////ANKaZPjRmGH/5cKh////////////k149/3UwAP91MQD/lmQ//86rhv+USg3/m1YA/5hSAP+bVgD4////AP///wDSmmT4zpJY/+/bx///////8+TV/8mLT/+TVx//gkIA/5lVAP+VTAD/x6B//7aEVv/JpH7/s39J+P///wD///8A0ppk+M6SWP/u2sf///////Pj1f/Nj1T/2KFs/8mOUv+eWhD/lEsA/8aee/+0glT/x6F7/7J8Rvj///8A////ANKaZPjRmGH/48Cf///////+/v7/2qt//82PVP/OkFX/37KJ/86siv+USg7/mVQA/5hRAP+bVgD4////AP///wDSmmT40ppk/9CVXP/69O////////7+/v/x4M//8d/P//7+/f//////9u7n/6tnJf+XUgD/nFgA+P///wD///8A0ppk+NKaZP/RmWL/1qNy//r07///////////////////////+vXw/9akdP/Wnmn/y5FY/6JfFvj///8A////ANKaZFTSmmTo0ppk/9GYYv/Ql1//5cWm//Hg0P/x4ND/5cWm/9GXYP/RmGH/0ppk/9KaZOjVnmpY////AP///wDSmmQA0ppkEtKaZI7SmmT60ppk/9CWX//OkVb/zpFW/9CWX//SmmT/0ppk/NKaZJDSmmQS0ppkAP///wD///8A0ppkANKaZADSmmQA0ppkKtKaZLrSmmT/0ppk/9KaZP/SmmT/0ppkvNKaZCrSmmQA0ppkANKaZAD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkUtKaZNzSmmTc0ppkVNKaZADSmmQA0ppkANKaZADSmmQA////AP5/AAD4HwAA4AcAAMADAACAAQAAgAEAAIABAACAAQAAgAEAAIABAACAAQAAgAEAAMADAADgBwAA+B8AAP5/AAAoAAAAIAAAAEAAAAABACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAyCRACMgkQA6oJEAOqCRACQgkQAEIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRABigkQA5oJEAP+CRAD/gkQA/4JEAP+CRADqgkQAZoJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAA4gkQAwoJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQAxIJEADyCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAAgkQAAP///wD///8A////AP///wCCRAAAgkQAAIJEAACCRAAAgkQAAIJEAACCRAAWgkQAmIJEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAJyCRAAYgkQAAIJEAACCRAAAgkQAAIJEAACCRAAA////AP///wD///8A////AIJEAACCRAAAgkQAAIJEAACCRAAAgkQAdIJEAPCCRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAP+CRAD/gkQA/4JEAPSCRAB4gkQAAIJEAACCRAAAgkQAAIJEAAD///8A////AP///wD///8AgkQAAIJEAACCRAAAgkQASoJEANKCRAD/gkQA/4JEAP+CRAD/g0YA/39AAP9zLgD/bSQA/2shAP9rIQD/bSQA/3MuAP9/PwD/g0YA/4JEAP+CRAD/gkQA/4JEAP+CRADUgkQAToJEAACCRAAAgkQAAP///wD///8A////AP///wB+PwAAgkUAIoJEAKiCRAD/gkQA/4JEAP+CRAD/hEcA/4BBAP9sIwD/dTAA/5RfKv+viF7/vp56/76ee/+wiF7/lWAr/3YxAP9sIwD/f0AA/4RHAP+CRAD/gkQA/4JEAP+CRAD/gkQArIJEACaBQwAA////AP///wD///8A////AIBCAEBzNAD6f0EA/4NFAP+CRAD/gkQA/4VIAP92MwD/bSUA/6N1Tv/ezsL/////////////////////////////////38/D/6V3Uv9uJgD/dTEA/4VJAP+CRAD/gkQA/4JEAP+BQwD/fUAA/4FDAEj///8A////AP///wD///8AzJRd5qBlKf91NgD/dDUA/4JEAP+FSQD/cy4A/3YyAP/PuKP//////////////////////////////////////////////////////9K7qP94NQD/ciwA/4VJAP+CRAD/fkEA/35BAP+LSwD/mlYA6v///wD///8A////AP///wDdpnL/4qx3/8KJUv+PUhf/cTMA/3AsAP90LgD/4dK+/////////////////////////////////////////////////////////////////+TYxf91MAD/dTIA/31CAP+GRwD/llQA/6FcAP+gWwD8////AP///wD///8A////ANGZY/LSm2X/4ap3/92mcP+wdT3/byQA/8mwj////////////////////////////////////////////////////////////////////////////+LYxv9zLgP/jUoA/59bAP+hXAD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/RmWL/1p9q/9ubXv/XqXj////////////////////////////7+fD/vZyG/6BxS/+gcUr/vJuE//r37f//////////////////////3MOr/5dQBf+dVQD/nVkA/5xYAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmWP/yohJ//jo2P//////////////////////4NTG/4JDFf9lGAD/bSQA/20kAP9kGAD/fz8S/+Xb0f//////5NG9/6txN/+LOgD/m1QA/51aAP+cWAD/m1cA/5xYAP+cWADy////AP///wD///8A////ANKaZPLSmmT/0ppk/8+TWf/Unmv//v37//////////////////////+TWRr/VwsA/35AAP+ERgD/g0UA/4JGAP9lHgD/kFga/8KXX/+TRwD/jT4A/49CAP+VTQD/n10A/5xYAP+OQQD/lk4A/55cAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/y4tO/92yiP//////////////////////8NnE/8eCQP+rcTT/ez0A/3IyAP98PgD/gEMA/5FSAP+USwD/jj8A/5lUAP+JNwD/yqV2/694Mf+HNQD/jkAA/82rf/+laBj/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/LiUr/4byY///////////////////////gupX/0I5P/+Wuev/Lklz/l1sj/308AP+QSwD/ol0A/59aAP+aVQD/k0oA/8yoh///////+fXv/6pwO//Lp3v///////Pr4f+oay7y////AP///wD///8A////ANKaZPLSmmT/0ppk/8uJSv/hvJj//////////////////////+G7l//Jhkb/0ppk/96nc//fqXX/x4xO/6dkFP+QSQD/llEA/5xXAP+USgD/yaOA///////38uv/qG05/8ijdv//////8efb/6ZpLPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/zIxO/9yxh///////////////////////7dbA/8iEQf/Sm2X/0Zlj/9ScZv/eqHf/2KJv/7yAQf+XTgD/iToA/5lSAP+JNgD/yKFv/611LP+HNQD/jT8A/8qmeP+kZRT/jT4A8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/Pk1n/1J5q//78+//////////////////+/fv/1aFv/8iEQv/Tm2b/0ppl/9GZY//Wn2z/1pZc/9eldf/Bl2b/kUcA/4w9AP+OQAD/lUwA/59eAP+cWQD/jT8A/5ZOAP+eXADy////AP///wD///8A////ANKaZPLSmmT/0ppk/9KZY//KiEn/8d/P///////////////////////47+f/05tm/8iCP//KiEj/yohJ/8eCP//RmGH//vfy///////n1sP/rXQ7/4k4AP+TTAD/nVoA/5xYAP+cVwD/nFgA/5xYAPL///8A////AP///wD///8A0ppk8tKaZP/SmmT/0ptl/8uLTf/aq37////////////////////////////+/fz/6c2y/961jv/etY7/6Myx//78+v//////////////////////3MWv/5xXD/+ORAD/mFQA/51ZAP+cWAD/nFgA8v///wD///8A////AP///wDSmmTy0ppk/9KaZP/SmmT/0ppk/8mFRP/s1b//////////////////////////////////////////////////////////////////////////////+PD/0JFU/7NzMv+WUQD/kUsA/5tXAP+dWQDy////AP///wD///8A////ANKaZP/SmmT/0ppk/9KaZP/Sm2X/z5NZ/8yMT//z5NX/////////////////////////////////////////////////////////////////9Ofa/8yNUP/UmGH/36p5/8yTWv+qaSD/kksA/5ROAPz///8A////AP///wD///8A0ppk5NKaZP/SmmT/0ppk/9KaZP/TnGf/zY9T/82OUv/t1sD//////////////////////////////////////////////////////+7Yw//OkFX/zI5R/9OcZ//SmmP/26V0/9ymdf/BhUf/ol8R6P///wD///8A////AP///wDSmmQ80ppk9tKaZP/SmmT/0ppk/9KaZP/TnGj/zpFW/8qJSv/dson/8uHS//////////////////////////////////Lj0//etIv/y4lL/86QVf/TnGj/0ppk/9KaZP/RmWP/05xn/9ymdfjUnWdC////AP///wD///8A////ANKaZADSmmQc0ppkotKaZP/SmmT/0ppk/9KaZP/Tm2b/0Zli/8qJSf/NjlH/16Z3/+G8mP/myKr/5siq/+G8mP/Xp3f/zY5S/8qISf/RmGH/05tm/9KaZP/SmmT/0ppk/9KaZP/SmmSm0pljINWdaQD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkQtKaZMrSmmT/0ppk/9KaZP/SmmT/0ptl/9GYYf/Nj1P/y4lL/8qISP/KiEj/y4lK/82PU//RmGH/0ptl/9KaZP/SmmT/0ppk/9KaZP/SmmTO0ppkRtKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZGzSmmTu0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmTw0ppkcNKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZBLSmmSQ0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppklNKaZBTSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP///wD///8A0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQy0ppkutKaZP/SmmT/0ppk/9KaZP/SmmT/0ppk/9KaZP/SmmT/0ppkvtKaZDbSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkAP///wD///8A////AP///wDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkXNKaZODSmmT/0ppk/9KaZP/SmmT/0ppk5NKaZGDSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA////AP///wD///8A////ANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkBtKaZIbSmmTo0ppk6tKaZIrSmmQK0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZADSmmQA0ppkANKaZAD///8A////AP/8P///+B///+AH//+AAf//AAD//AAAP/AAAA/gAAAHwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA8AAAAPAAAADwAAAA+AAAAfwAAAP/AAAP/8AAP//gAH//+AH///4H////D//" rel="icon" />
+  
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<div class="wrapper">
+<header id="title-block-header">
+<h1 class="title" style="text-align:center">Native handles and file
+streams</h1>
+<table style="border:none;float:right">
+  <tr>
+    <td>Document #:</td>
+    <td>P1759R4</td>
+  </tr>
+  <tr>
+    <td>Date:</td>
+    <td>2022-10-09</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Project:</td>
+    <td>Programming Language C++</td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Audience:</td>
+    <td>
+      Library Evolution<br>
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align:top">Reply-to:</td>
+    <td>
+      Elias Kosunen<br>&lt;<a href="mailto:isocpp@eliaskosunen.com" class="email">isocpp@eliaskosunen.com</a>&gt;<br>
+    </td>
+  </tr>
+</table>
+</header>
+<div style="clear:both">
+<div id="TOC" role="doc-toc">
+<h1 id="toctitle">Contents</h1>
+<ul>
+<li><a href="#abstract" id="toc-abstract"><span class="toc-section-number">1</span> Abstract<span></span></a></li>
+<li><a href="#history" id="toc-history"><span class="toc-section-number">2</span> Revision History<span></span></a>
+<ul>
+<li><a href="#r4" id="toc-r4"><span class="toc-section-number">2.1</span> R4 (draft)<span></span></a></li>
+<li><a href="#r3" id="toc-r3"><span class="toc-section-number">2.2</span> R3<span></span></a></li>
+<li><a href="#r2" id="toc-r2"><span class="toc-section-number">2.3</span> R2<span></span></a></li>
+<li><a href="#r1" id="toc-r1"><span class="toc-section-number">2.4</span> R1<span></span></a></li>
+<li><a href="#r0" id="toc-r0"><span class="toc-section-number">2.5</span> R0<span></span></a></li>
+</ul></li>
+<li><a href="#motivation" id="toc-motivation"><span class="toc-section-number">3</span> Motivation<span></span></a></li>
+<li><a href="#scope" id="toc-scope"><span class="toc-section-number">4</span> Scope<span></span></a></li>
+<li><a href="#design" id="toc-design"><span class="toc-section-number">5</span> Design Discussion<span></span></a>
+<ul>
+<li><a href="#handle-type" id="toc-handle-type"><span class="toc-section-number">5.1</span> Type of
+<code class="sourceCode default">native_handle_type</code><span></span></a></li>
+<li><a href="#precond" id="toc-precond"><span class="toc-section-number">5.2</span> Precondition<span></span></a></li>
+</ul></li>
+<li><a href="#impact" id="toc-impact"><span class="toc-section-number">6</span> Impact On the Standard and Existing
+Code<span></span></a></li>
+<li><a href="#implementation" id="toc-implementation"><span class="toc-section-number">7</span> Implementation<span></span></a></li>
+<li><a href="#prior-art" id="toc-prior-art"><span class="toc-section-number">8</span> Prior Art<span></span></a>
+<ul>
+<li><a href="#discussion" id="toc-discussion"><span class="toc-section-number">8.1</span> Discussion<span></span></a></li>
+<li><a href="#precendent" id="toc-precendent"><span class="toc-section-number">8.2</span> Existing precendent for presence
+of
+<code class="sourceCode default">native_handle</code><span></span></a></li>
+</ul></li>
+<li><a href="#standardese" id="toc-standardese"><span class="toc-section-number">9</span> Technical
+Specifications<span></span></a>
+<ul>
+<li><a href="#wording-notes" id="toc-wording-notes"><span class="toc-section-number">9.1</span> Wording
+notes<span></span></a></li>
+<li><a href="#ft-macro" id="toc-ft-macro"><span class="toc-section-number">9.2</span> Feature test
+macro<span></span></a></li>
+<li><a href="#wording" id="toc-wording"><span class="toc-section-number">9.3</span> Wording<span></span></a></li>
+</ul></li>
+<li><a href="#acknowledgements" id="toc-acknowledgements"><span class="toc-section-number">10</span>
+Acknowledgements<span></span></a></li>
+<li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">11</span> References<span></span></a></li>
+</ul>
+</div>
+<h1 data-number="1" id="abstract"><span class="header-section-number">1</span> Abstract<a href="#abstract" class="self-link"></a></h1>
+<p>This paper proposes adding a new typedef to standard file streams:
+<code class="sourceCode default">native_handle_type</code>. This type is
+an alias to whatever type the platform uses for its file descriptors:
+<code class="sourceCode default">int</code> on POSIX,
+<code class="sourceCode default">HANDLE</code>
+(<code class="sourceCode default">void*</code>) on Windows, and
+something else on other platforms. This type is a non-owning handle and
+has generally sane semantics: default constructability, trivial
+copyability and it’s standard layout.</p>
+<p>Alongside this, this paper proposes adding a concrete member
+function: <code class="sourceCode default">.native_handle()</code>,
+returning a <code class="sourceCode default">native_handle_type</code>,
+to the following class templates:</p>
+<ul>
+<li><code class="sourceCode default">basic_filebuf</code></li>
+<li><code class="sourceCode default">basic_ifstream</code></li>
+<li><code class="sourceCode default">basic_ofstream</code></li>
+<li><code class="sourceCode default">basic_fstream</code></li>
+</ul>
+<h1 data-number="2" id="history"><span class="header-section-number">2</span> Revision History<a href="#history" class="self-link"></a></h1>
+<h2 data-number="2.1" id="r4"><span class="header-section-number">2.1</span> R4 (draft)<a href="#r4" class="self-link"></a></h2>
+<ul>
+<li>Update wording:
+<ul>
+<li><code class="sourceCode default">native_handle_type</code> constexpr
+default constructor -&gt; default constructor</li>
+<li>Add wording as to how the handle returned by
+<code class="sourceCode default">.native_handle()</code> is valid only
+when the file is open</li>
+</ul></li>
+<li>Update wording to reference the latest standard draft <span class="citation" data-cites="N4892">[<a href="#ref-N4892" role="doc-biblioref">N4892</a>]</span></li>
+</ul>
+<h2 data-number="2.2" id="r3"><span class="header-section-number">2.2</span> R3<a href="#r3" class="self-link"></a></h2>
+<ul>
+<li>Add <code class="sourceCode default">std::condition_variable</code>
+and <span class="citation" data-cites="P2146">[<a href="#ref-P2146" role="doc-biblioref">P2146R2</a>]</span> to list of standard types
+having a <code class="sourceCode default">.native_handle()</code> member
+function</li>
+<li>Update wording to reference the latest standard draft <span class="citation" data-cites="N4849">[<a href="#ref-N4849" role="doc-biblioref">N4849</a>]</span>, and update references to other
+P-numbered papers</li>
+<li>Change paper title</li>
+</ul>
+<h2 data-number="2.3" id="r2"><span class="header-section-number">2.3</span> R2<a href="#r2" class="self-link"></a></h2>
+<ul>
+<li>Minor touches to wording
+<ul>
+<li>Refine requirements on
+<code class="sourceCode default">native_handle_type</code> (remove
+<code class="sourceCode default">equality_comparable</code>, add
+constexpr default constructability)</li>
+<li>Fix some broken references using section numbers in the WD</li>
+<li>Update reference to the WD</li>
+</ul></li>
+<li>Editorial fixes</li>
+</ul>
+<h2 data-number="2.4" id="r1"><span class="header-section-number">2.4</span> R1<a href="#r1" class="self-link"></a></h2>
+<ul>
+<li>Make <code class="sourceCode default">native_handle_type</code> be
+standard layout</li>
+<li>Add precondition
+(<code class="sourceCode default">is_open() == true</code>) to
+<code class="sourceCode default">.native_handle()</code></li>
+<li>Add feature test macro
+<code class="sourceCode default">__cpp_lib_fstream_native_handle</code></li>
+<li>Fix errors with opening the file with POSIX APIs in Motivation (see,
+we need this paper, fstreams are easier to open correctly!)</li>
+<li>Add additional motivating use case in vectored/scatter-gather
+IO</li>
+<li><code class="sourceCode default">Regular</code> -&gt;
+<code class="sourceCode default">regular</code></li>
+</ul>
+<p>Incorporate LEWGI feedback from Cologne (July 2019):</p>
+<ul>
+<li>Move to a member function and member typedef</li>
+<li>Make <code class="sourceCode default">native_handle</code> return
+value not be mandated to be unique</li>
+<li>Add note about how the presence of the members is required, and not
+implementation-defined (like for thread)</li>
+</ul>
+<h2 data-number="2.5" id="r0"><span class="header-section-number">2.5</span> R0<a href="#r0" class="self-link"></a></h2>
+<p>Initial revision.</p>
+<h1 data-number="3" id="motivation"><span class="header-section-number">3</span> Motivation<a href="#motivation" class="self-link"></a></h1>
+<p>For some operations, using OS/platform-specific file APIs is
+necessary. If a user wanted to use these APIs, they’re unable to use
+iostreams without reopening the file.</p>
+<p>For example, if one wanted to query the time a file was last modified
+on POSIX, one would use <code class="sourceCode default">fstat</code>,
+which takes a file descriptor:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> fd <span class="op">=</span> <span class="op">::</span>open<span class="op">(</span><span class="st">&quot;~/foo.txt&quot;</span>, O_RDONLY<span class="op">)</span>;</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">::</span>stat s<span class="op">{}</span>;</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> err <span class="op">=</span> <span class="op">::</span>fstat<span class="op">(</span>fd, <span class="op">&amp;</span>s<span class="op">)</span>;</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>std<span class="op">::</span>chrono<span class="op">::</span>sys_seconds last_modified <span class="op">=</span> std<span class="op">::</span>chrono<span class="op">::</span>seconds<span class="op">(</span>s<span class="op">.</span>st_mtime<span class="op">.</span>tv_sec<span class="op">)</span>;</span></code></pre></div>
+<p>The Filesystem TS introduced the
+<code class="sourceCode default">status</code> function returning a
+<code class="sourceCode default">file_status</code> structure. This
+doesn’t solve our problem, because
+<code class="sourceCode default">std::filesystem::status</code> takes a
+path, not a native file descriptor. Using paths is generally discouraged
+in these sort of situations, because the path may not refer to the same
+file it referred to previously (the file might’ve been moved), or the
+file might not exist anymore at all. In short, using paths is
+potentially racy.</p>
+<p>Also,
+<code class="sourceCode default">std::filesystem::file_status</code>
+only contains member functions
+<code class="sourceCode default">type()</code> and
+<code class="sourceCode default">permissions()</code>, not one for last
+time of modification. Extending this structure is out of scope for this
+proposal, and not feasible for every single possible operation the user
+may wish to do with OS APIs, of which querying simple file properties is
+but a small subset.</p>
+<p>If the user needs to do a single operation not supported by the
+standard library, they have to make a choice between using OS APIs
+exclusively, or reopening the file every time it’s necessary. The former
+is unfortunate from the persective of the standard library and its
+usefulness. The latter is likely to lead to forgetting to close the
+file, or running into buffering or synchronization issues, as is the
+case with C APIs.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Writing the latest modification date to a file</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>std<span class="op">::</span>chrono<span class="op">::</span>sys_seconds last_modified<span class="op">(</span><span class="dt">int</span> fd<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// See above for POSIX implementation using fstat</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Today&#39;s code</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">// Option #1:</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">// Use iostreams by reopening the file</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> fd <span class="op">=</span> <span class="op">::</span>open<span class="op">(</span><span class="st">&quot;~/foo.txt&quot;</span>, O_RDONLY<span class="op">)</span>; <span class="co">// CreateFile on Windows</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> lm <span class="op">=</span> last_modified<span class="op">(</span>fd<span class="op">)</span>;</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">::</span>close<span class="op">(</span>fd<span class="op">)</span>; <span class="co">// CloseFile on Windows</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Hope the path still points to the file!</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Need to allocate </span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>ofstream of<span class="op">(</span><span class="st">&quot;~/foo.txt&quot;</span><span class="op">)</span>;</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    of <span class="op">&lt;&lt;</span> std<span class="op">::</span>chrono<span class="op">::</span>format<span class="op">(</span><span class="st">&quot;</span><span class="sc">%c</span><span class="st">&quot;</span>, lm<span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Need to flush</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">// Option #2:</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">// Abstain from using iostreams altogether</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> fd <span class="op">=</span> <span class="op">::</span>open<span class="op">(</span><span class="st">&quot;~/foo.txt&quot;</span>, O_RDWR<span class="op">)</span>;</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> lm <span class="op">=</span> last_modified<span class="op">(</span>fd<span class="op">)</span>;</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Using ::write() is clunky;</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// skipping error handling for brevity</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> str <span class="op">=</span> std<span class="op">::</span>chrono<span class="op">::</span>format<span class="op">(</span><span class="st">&quot;</span><span class="sc">%c\n</span><span class="st">&quot;</span>, lm<span class="op">)</span>;</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="op">::</span>write<span class="op">(</span>fd, str<span class="op">.</span>data<span class="op">()</span>, str<span class="op">.</span>size<span class="op">())</span>;</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Remember to close!</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Hope format or push_back doesn&#39;t throw</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    <span class="op">::</span>close<span class="op">(</span>fd<span class="op">)</span>;</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co">// This proposal</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="co">// No need to use platform-specific APIs to open the file</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    std<span class="op">::</span>ofstream of<span class="op">(</span><span class="st">&quot;~/foo.txt&quot;</span><span class="op">)</span>;</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">auto</span> lm <span class="op">=</span> last_modified<span class="op">(</span>of<span class="op">.</span>native_handle<span class="op">())</span>;</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>    of <span class="op">&lt;&lt;</span> std<span class="op">::</span>chrono<span class="op">::</span>format<span class="op">(</span><span class="st">&quot;</span><span class="sc">%c</span><span class="st">&quot;</span>, lm<span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="ch">&#39;</span><span class="sc">\n</span><span class="ch">&#39;</span>;</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>    <span class="co">// RAII does ownership handling for us</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The utility of getting a file descriptor (or other native file
+handle) is not limited to getting the last modification date. Other
+examples include, but are definitely not limited to:</p>
+<ul>
+<li>file locking (<code class="sourceCode default">fcntl()</code> +
+<code class="sourceCode default">F_SETLK</code> on POSIX,
+<code class="sourceCode default">LockFile</code> on Windows)</li>
+<li>getting file status flags
+(<code class="sourceCode default">fcntl()</code> +
+<code class="sourceCode default">F_GETFL</code> on POSIX,
+<code class="sourceCode default">GetFileInformationByHandle</code> on
+Windows)</li>
+<li>vectored/scatter-gather IO
+(<code class="sourceCode default">vread()</code>/<code class="sourceCode default">vwrite()</code>
+on POSIX)</li>
+<li>non-blocking IO (<code class="sourceCode default">fcntl()</code> +
+<code class="sourceCode default">O_NONBLOCK</code>/<code class="sourceCode default">F_SETSIG</code>
+on POSIX)</li>
+</ul>
+<p>Basically, this paper would make standard file streams interoperable
+with operating system interfaces, making iostreams more useful in that
+regard.</p>
+<p>An alternative would be adding a lot of this functionality to
+<code class="sourceCode default">fstream</code> and
+<code class="sourceCode default">filesystem</code>. The problem is, that
+some of this behavior is inherently platform-specific. For example,
+getting the inode of a file is something that only makes sense on POSIX,
+so cannot be made part of the
+<code class="sourceCode default">fstream</code> interface, and should
+only accessible through the native file descriptor.</p>
+<p>With <span class="citation" data-cites="P1031">[<a href="#ref-P1031" role="doc-biblioref">P1031R2</a>]</span> and <span class="citation" data-cites="P2146">[<a href="#ref-P2146" role="doc-biblioref">P2146R2</a>]</span>, we’re potentially getting a
+replacement for iostreams in the standard, or at least facilities
+complementing them. The author thinks, that even if these papers were to
+be merged to the standard, the functionality described in this paper
+would still be useful, as iostreams aren’t going anywhere soon.</p>
+<h1 data-number="4" id="scope"><span class="header-section-number">4</span> Scope<a href="#scope" class="self-link"></a></h1>
+<p>This paper does <em>not</em> propose enabling the construction of a
+file stream or a file stream buffer from a native file handle. The
+author is worried of ownership and implementation issues possibly
+associated with this design.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// NOT PROPOSED</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;fstream&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;fcntl.h&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> fd <span class="op">=</span> <span class="op">::</span>open<span class="op">(</span><span class="co">/* ... */</span><span class="op">)</span>;</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="kw">auto</span> f <span class="op">=</span> std<span class="op">::</span>fstream<span class="op">{</span>fd<span class="op">}</span>;</span></code></pre></div>
+<p>This paper also does <em>not</em> touch anything related to
+<code class="sourceCode default">FILE*</code>, namely getting a native
+handle out of one.</p>
+<h1 data-number="5" id="design"><span class="header-section-number">5</span> Design Discussion<a href="#design" class="self-link"></a></h1>
+<h2 data-number="5.1" id="handle-type"><span class="header-section-number">5.1</span> Type of
+<code class="sourceCode default">native_handle_type</code><a href="#handle-type" class="self-link"></a></h2>
+<p>In this paper, the definition for
+<code class="sourceCode default">native_handle_type</code> is
+<em>much</em> more strict than in
+<code class="sourceCode default">thread</code>. For reference, this is
+the wording from <em>Native handles</em> <span>32.2.3
+<a href="https://wg21.link/thread.req.native">[thread.req.native]</a></span>,
+from <span class="citation" data-cites="N4892">[<a href="#ref-N4892" role="doc-biblioref">N4892</a>]</span>:</p>
+<blockquote>
+<p>Several classes described in this Clause have members
+<code class="sourceCode default">native_handle_type</code> and
+<code class="sourceCode default">native_handle</code>. The presence of
+these members and their semantics is implementation-defined. [
+<em>Note:</em> These members allow implementations to provide access to
+implementation details. Their names are specified to facilitate portable
+compile-time detection. Actual use of these members is inherently
+non-portable. — <em>end note</em> ]</p>
+</blockquote>
+<p>During the review of R0 of this paper in Cologne by LEWGI, it was
+said how having the same specification here would make this paper
+effectively useless. Having the presence of a member be
+implementation-defined was deemed as bad design, which should not be
+replicated in this paper.</p>
+<p>The proposed alternative in this paper, as directed by LEWGI, is
+allowing a conforming implementation to return an invalid native file
+handle, if one cannot be retrieved.</p>
+<h2 data-number="5.2" id="precond"><span class="header-section-number">5.2</span> Precondition<a href="#precond" class="self-link"></a></h2>
+<p>The member function
+<code class="sourceCode default">.native_handle()</code>, as specified
+in this paper, has a precondition of
+<code class="sourceCode default">.is_open() == true</code>. The
+precondition is specified with “Expects”, so breaking it would be UB,
+and would in practice be enforced with an assert.</p>
+<p>An alternative to this would be throwing if the file is not open, or
+returning some unspecified invalid handle.</p>
+<h1 data-number="6" id="impact"><span class="header-section-number">6</span> Impact On the Standard and
+Existing Code<a href="#impact" class="self-link"></a></h1>
+<p>This proposal is a pure library extension, requiring no changes to
+the core language. It would cause no existing conforming code to
+break.</p>
+<h1 data-number="7" id="implementation"><span class="header-section-number">7</span> Implementation<a href="#implementation" class="self-link"></a></h1>
+<p>Implementing this paper should be a relatively trivial task.</p>
+<p>Although all implementations surveyed (libstdc++, libc++ and MSVC)
+use <code class="sourceCode default">FILE*</code> instead of native file
+descriptors in their
+<code class="sourceCode default">basic_filebuf</code> implementations,
+these platforms provide facilites to get a native handle from a
+<code class="sourceCode default">FILE*</code>;
+<code class="sourceCode default">fileno</code> on POSIX, and
+<code class="sourceCode default">_fileno</code> +
+<code class="sourceCode default">_get_osfhandle</code> on Windows. The
+following reference implementations use these.</p>
+<p>For libstdc++ on Linux:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> CharT, <span class="kw">class</span> Traits<span class="op">&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> basic_filebuf <span class="op">:</span> <span class="kw">public</span> basic_streambuf<span class="op">&lt;</span>CharT, Traits<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> native_handle_type <span class="op">=</span> <span class="dt">int</span>;</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    native_handle_type native_handle<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="ot">assert</span><span class="op">(</span>is_open<span class="op">())</span>;</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="co">// _M_file (__basic_file&lt;char&gt;) has a member function for this purpose</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> _M_file<span class="op">.</span>fd<span class="op">()</span>;</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="co">// ::fileno(_M_file.file()) could also be used</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>For libc++ on Linux:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> CharT, <span class="kw">class</span> Traits<span class="op">&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> basic_filebuf <span class="op">:</span> <span class="kw">public</span> basic_streambuf<span class="op">&lt;</span>CharT, Traits<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> native_handle_type <span class="op">=</span> <span class="dt">int</span>;</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    native_handle_type native_handle<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="ot">assert</span><span class="op">(</span>is_open<span class="op">())</span>;</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="co">// __file_ is a FILE*</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="op">::</span>fileno<span class="op">(</span>__file_<span class="op">)</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>For MSVC:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> CharT, <span class="kw">class</span> Traits<span class="op">&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> basic_filebuf <span class="op">:</span> <span class="kw">public</span> basic_streambuf<span class="op">&lt;</span>CharT, Traits<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> native_handle_type <span class="op">=</span> HANDLE;</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    native_handle_type native_handle<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="ot">assert</span><span class="op">(</span>is_open<span class="op">())</span>;</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="co">// _Myfile is a FILE*</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="kw">auto</span> cfile <span class="op">=</span> <span class="op">::</span>_fileno<span class="op">(</span>_Myfile<span class="op">)</span>;</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="co">// _get_osfhandle returns intptr_t, which can be cast to HANDLE (void*)</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="kw">static_cast</span><span class="op">&lt;</span>HANDLE<span class="op">&gt;(::</span>_get_osfhandle<span class="op">(</span>cfile<span class="op">))</span>;</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>For all of these cases, implementing
+<code class="sourceCode default">.native_handle()</code> for
+<code class="sourceCode default">ifstream</code>,
+<code class="sourceCode default">ofstream</code> and
+<code class="sourceCode default">fstream</code> is trivial:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">template</span> <span class="op">&lt;</span><span class="kw">class</span> CharT, <span class="kw">class</span> Traits<span class="op">&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> basic_ifstream <span class="op">:</span> <span class="kw">public</span> basic_istream<span class="op">&lt;</span>CharT, Traits<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> native_handle_type <span class="op">=</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        <span class="kw">typename</span> basic_filebuf<span class="op">&lt;</span>CharT, Traits<span class="op">&gt;::</span>native_handle_type;</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// ...</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    native_handle_type native_handle<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> rdbuf<span class="op">()-&gt;</span>native_handle<span class="op">()</span>;</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span>;</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">// Repeat for ofstream and fstream</span></span></code></pre></div>
+<h1 data-number="8" id="prior-art"><span class="header-section-number">8</span> Prior Art<a href="#prior-art" class="self-link"></a></h1>
+<p><span class="citation" data-cites="Boost.IOStreams">[<a href="#ref-Boost.IOStreams" role="doc-biblioref">Boost.IOStreams</a>]</span> provides
+<code class="sourceCode default">file_descriptor</code>,
+<code class="sourceCode default">file_descriptor_source</code>, and
+<code class="sourceCode default">file_descriptor_sink</code>, which,
+when used in conjunction with
+<code class="sourceCode default">stream_buffer</code>, are
+<code class="sourceCode default">std::basic_streambuf</code>s using a
+file descriptor. These classes can be constructed from a path or a
+native handle (<code class="sourceCode default">int</code> or
+<code class="sourceCode default">HANDLE</code>) and can also return it
+with member function
+<code class="sourceCode default">handle()</code>.</p>
+<p>The Networking TS <span class="citation" data-cites="N4734">[<a href="#ref-N4734" role="doc-biblioref">N4734</a>]</span> has members
+<code class="sourceCode default">native_handle_type</code> and
+<code class="sourceCode default">.native_handle()</code> in numerous
+places, including
+<code class="sourceCode default">std::net::socket</code>. It specifies
+(in [socket.reqmts.native]) the presence of these members in a similar
+fashion to <code class="sourceCode default">thread</code>, as in making
+their presence implementation-defined. It does, however, recommend
+POSIX-based systems to use <code class="sourceCode default">int</code>
+for this purpose.</p>
+<p>The specification of <span class="citation" data-cites="P2146">[<a href="#ref-P2146" role="doc-biblioref">P2146R2</a>]</span> is at this
+time incomplete, but the interface resembles this paper, as in having a
+member typedef
+<code class="sourceCode default">native_handle_type</code>, and a member
+function returning one. It is not specified in the paper whether the
+presence of the typedef and the member function is
+implementation-defined.</p>
+<p><span class="citation" data-cites="P1031">[<a href="#ref-P1031" role="doc-biblioref">P1031R2</a>]</span> also defines a structure
+<code class="sourceCode default">native_handle_type</code> with an
+extensive interface and a member
+<code class="sourceCode default">union</code> with an
+<code class="sourceCode default">int</code> and a
+<code class="sourceCode default">HANDLE</code>, with a constructor
+taking either one of these.</p>
+<h2 data-number="8.1" id="discussion"><span class="header-section-number">8.1</span> Discussion<a href="#discussion" class="self-link"></a></h2>
+<p>There has been some discussion over the years about various things
+relating to this issue, but as far as the author is aware, no concrete
+proposal has ever been submitted.</p>
+<p>There have been a number of threads on std-discussion and
+std-proposals: <span class="citation" data-cites="std-proposals-native-handle">[<a href="#ref-std-proposals-native-handle" role="doc-biblioref">std-proposals-native-handle</a>]</span>, <span class="citation" data-cites="std-discussion-fd-io">[<a href="#ref-std-discussion-fd-io" role="doc-biblioref">std-discussion-fd-io</a>]</span>, <span class="citation" data-cites="std-proposals-native-raw-io">[<a href="#ref-std-proposals-native-raw-io" role="doc-biblioref">std-proposals-native-raw-io</a>]</span>, <span class="citation" data-cites="std-proposals-fd-access">[<a href="#ref-std-proposals-fd-access" role="doc-biblioref">std-proposals-fd-access</a>]</span>. The last one
+of these lead to a draft paper, that was never submitted: <span class="citation" data-cites="access-file-descriptors">[<a href="#ref-access-file-descriptors" role="doc-biblioref">access-file-descriptors</a>]</span>.</p>
+<p>The consensus that the author took from these discussions is, that
+native handle support for iostreams would be very much welcome.</p>
+<h2 data-number="8.2" id="precendent"><span class="header-section-number">8.2</span> Existing precendent for
+presence of <code class="sourceCode default">native_handle</code><a href="#precendent" class="self-link"></a></h2>
+<p><strong>Types <em>with</em> a standard way of getting the native
+handle</strong></p>
+<ul>
+<li><code class="sourceCode default">std::thread</code></li>
+<li><code class="sourceCode default">std::mutex</code> and other
+standard mutex types</li>
+<li><code class="sourceCode default">std::condition_variable</code></li>
+<li>Networking TS <span class="citation" data-cites="N4734">[<a href="#ref-N4734" role="doc-biblioref">N4734</a>]</span> types
+(e.g. <code class="sourceCode default">std::net::socket</code>)</li>
+<li>LLIO <span class="citation" data-cites="P1031">[<a href="#ref-P1031" role="doc-biblioref">P1031R2</a>]</span> types</li>
+<li>“Modern <code class="sourceCode default">std::byte</code> stream IO”
+types <span class="citation" data-cites="P2146">[<a href="#ref-P2146" role="doc-biblioref">P2146R2</a>]</span></li>
+</ul>
+<p><strong>Types <em>without</em> a standard way of getting the native
+handle</strong></p>
+<ul>
+<li><code class="sourceCode default">std::fstream</code> /
+<code class="sourceCode default">std::filebuf</code></li>
+<li><code class="sourceCode default">FILE*</code></li>
+</ul>
+<p>This paper would move
+<code class="sourceCode default">std::fstream</code> and
+<code class="sourceCode default">std::filebuf</code> from the bottom
+category to the top, where they arguably ought to belong.</p>
+<h1 data-number="9" id="standardese"><span class="header-section-number">9</span> Technical Specifications<a href="#standardese" class="self-link"></a></h1>
+<h2 data-number="9.1" id="wording-notes"><span class="header-section-number">9.1</span> Wording notes<a href="#wording-notes" class="self-link"></a></h2>
+<p>The wording is based on <span class="citation" data-cites="N4892">[<a href="#ref-N4892" role="doc-biblioref">N4892</a>]</span>.</p>
+<h2 data-number="9.2" id="ft-macro"><span class="header-section-number">9.2</span> Feature test macro<a href="#ft-macro" class="self-link"></a></h2>
+<p>This paper proposes adding a feature test macro, called
+<code class="sourceCode default">__cpp_lib_fstream_native_handle</code>.</p>
+<h2 data-number="9.3" id="wording"><span class="header-section-number">9.3</span> Wording<a href="#wording" class="self-link"></a></h2>
+<h3 data-number="9.3.1" id="add-the-following-section-into-file-based-streams-file.streams"><span class="header-section-number">9.3.1</span> Add the following section
+into <em>File-based streams</em> [file.streams]<a href="#add-the-following-section-into-file-based-streams-file.streams" class="self-link"></a></h3>
+<p>This section is to come between <span>29.9.1
+<a href="https://wg21.link/fstream.syn">[fstream.syn]</a></span> and
+<span>29.9.2
+<a href="https://wg21.link/filebuf">[filebuf]</a></span>.</p>
+<p><em>Note to editor:</em> Replace the ? with the appropriate section
+number. As of <span class="citation" data-cites="N4892">[<a href="#ref-N4892" role="doc-biblioref">N4892</a>]</span>, that would be
+29.10.2.</p>
+<div class="add" style="color: #006e28">
+
+<blockquote>
+<p><strong>?.?.? Native handles [file.native]</strong></p>
+<p> Several classes described in this section have a member
+<code class="sourceCode default">native_handle_type</code>.</p>
+<p> The type <code class="sourceCode default">native_handle_type</code>
+serves as a type representing a platform-specific handle to a file. It
+is trivially copyable and standard layout, models
+<code class="sourceCode default">semiregular</code>, and has a default
+constructor.</p>
+<p> [ <em>Note ?:</em> For operating systems based on POSIX,
+<code class="sourceCode default">native_handle_type</code> is
+<code class="sourceCode default">int</code>. For Windows-based operating
+systems, <code class="sourceCode default">native_handle_type</code> is
+<code class="sourceCode default">HANDLE</code>. — <em>end note</em>
+]</p>
+</blockquote>
+
+</div>
+<h3 data-number="9.3.2" id="modify-class-template-basic_filebuf-filebuf"><span class="header-section-number">9.3.2</span> Modify <em>Class template
+<code class="sourceCode default">basic_filebuf</code></em> [filebuf]<a href="#modify-class-template-basic_filebuf-filebuf" class="self-link"></a></h3>
+<div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>namespace std {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  template&lt;class charT, class traits = char_traits&lt;charT&gt;&gt;</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  class basic_filebuf : public basic_streambuf&lt;charT, traits&gt; {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  public:</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    using char_type   = charT;</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    using int_type    = typename traits::int_type;</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    using pos_type    = typename traits::pos_type;</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    using off_type    = typename traits::off_type;</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    using traits_type = traits;</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="va">+   using native_handle_type = <em>implementation-defined</em>; // see [file.native]</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    // ...</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    // [filebuf.members], members</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    bool is_open() const;</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    basic_filebuf* open(const char* s, ios_base::openmode mode);</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    basic_filebuf* open(const filesystem::path::value_type* s,</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>                        ios_base::openmode mode);  // wide systems only; see 29.9.1</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    basic_filebuf* open(const string&amp; s,</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                        ios_base::openmode mode);</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    basic_filebuf* open(const filesystem::path&amp; s,</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                        ios_base::openmode mode);</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    basic_filebuf* close();</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="va">+   native_handle_type native_handle();</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    // ...</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<h3 data-number="9.3.3" id="modify-class-template-basic_filebuf-filebuf-1"><span class="header-section-number">9.3.3</span> Modify <em>Class template
+<code class="sourceCode default">basic_filebuf</code></em> [filebuf]<a href="#modify-class-template-basic_filebuf-filebuf-1" class="self-link"></a></h3>
+<p><em>Note to editor:</em> Replace the ? in paragraph 7 with the
+appropriate note number.</p>
+<blockquote>
+<p> An instance of <code class="sourceCode default">basic_filebuf</code>
+behaves as described in [filebuf] provided
+<code class="sourceCode default">traits::pos_type</code> is
+<code class="sourceCode default">fpos&lt;traits::state_type&gt;</code>.
+Otherwise the behavior is undefined.</p>
+<div class="add" style="color: #006e28">
+<p> The underlying file of a
+<code class="sourceCode default">basic_filebuf</code> has an associated
+value of type
+<code class="sourceCode default">native_handle_type</code>, called the
+<em>native handle</em> of that file. A <em>native handle</em> can be
+obtained with the member function
+<code class="sourceCode default">native_handle()</code>, which is valid
+until the <code class="sourceCode default">close()</code> member
+function on the <code class="sourceCode default">basic_filebuf</code> is
+called. Whether a user-constructed value of
+<code class="sourceCode default">native_handle_type</code> may be a
+valid <em>native handle</em>, is implementation-defined. Whether the
+associated <em>native handle</em> is unique for each file, is
+implementation-defined.</p>
+<p> [ <em>Note ?:</em> This differs from the native handles of
+<code class="sourceCode default">thread</code>,
+<code class="sourceCode default">mutex</code> and
+<code class="sourceCode default">condition_variable</code>
+[thread.req.native], the presence of which is implementation-defined. —
+<em>end note</em> ]</p>
+<p> For any opened <code class="sourceCode default">basic_filebuf</code>
+<code class="sourceCode default">f</code>, the <em>native handle</em>
+returned by <code class="sourceCode default">native_handle()</code> is
+invalidated when <code class="sourceCode default">f.close()</code> is
+called, or <code class="sourceCode default">f</code> is destructed.</p>
+</div>
+<p> In order to support file I/O and multibyte/wide character
+conversion, conversions are performed using members of a facet, referred
+to as <code class="sourceCode default">a_codecvt</code> in the following
+subclauses, obtained as if by</p>
+</blockquote>
+<h3 data-number="9.3.4" id="add-to-the-end-of-member-functions-filebuf.members"><span class="header-section-number">9.3.4</span> Add to the end of <em>Member
+functions</em> [filebuf.members]<a href="#add-to-the-end-of-member-functions-filebuf.members" class="self-link"></a></h3>
+<p>This would come after the definition of
+<code class="sourceCode default">basic_filebuf::close()</code>, which
+occupies paragraphs 8-10.</p>
+<div class="add" style="color: #006e28">
+
+<blockquote>
+<div class="sourceCode" id="cb9"><pre class="sourceCode default default"><code class="sourceCode default"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>native_handle_type native_handle();</span></code></pre></div>
+<p> <em>Expects:</em> <code class="sourceCode default">is_open()</code>
+is <code class="sourceCode default">true</code>.</p>
+<p> <em>Throws:</em> Nothing.</p>
+<p> <em>Returns:</em> The <em>native handle</em> associated with this
+file.</p>
+</blockquote>
+
+</div>
+<h3 data-number="9.3.5" id="modify-class-template-basic_ifstream-ifstream"><span class="header-section-number">9.3.5</span> Modify <em>Class template
+<code class="sourceCode default">basic_ifstream</code></em> [ifstream]<a href="#modify-class-template-basic_ifstream-ifstream" class="self-link"></a></h3>
+<div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>namespace std {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  template&lt;class charT, class traits = char_traits&lt;charT&gt;&gt;</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  class basic_ifstream : public basic_istream&lt;charT, traits&gt; {</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  public:</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    using char_type   = charT;</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    using int_type    = typename traits::int_type;</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    using pos_type    = typename traits::pos_type;</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    using off_type    = typename traits::off_type;</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    using traits_type = traits;</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="va">+   using native_handle_type =</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="va">+     typename basic_filebuf&lt;charT, traits&gt;::native_handle_type;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    // ...</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    // [ifstream.members], members</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    basic_filebuf&lt;charT, traits&gt;* rdbuf() const;</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="va">+   native_handle_type native_handle();</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    bool is_open() const;</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    // ...</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<h3 data-number="9.3.6" id="add-to-member-functions-ifstream.members-after-p1"><span class="header-section-number">9.3.6</span> Add to <em>Member
+functions</em> [ifstream.members] after p1<a href="#add-to-member-functions-ifstream.members-after-p1" class="self-link"></a></h3>
+<p>This would come between the definitions of
+<code class="sourceCode default">basic_ifstream::rdbuf()</code> (p1) and
+<code class="sourceCode default">basic_ifstream::is_open()</code> (p2,
+now p3).</p>
+<div class="add" style="color: #006e28">
+
+<blockquote>
+<div class="sourceCode" id="cb11"><pre class="sourceCode default default"><code class="sourceCode default"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>native_handle_type native_handle();</span></code></pre></div>
+<p> <em>Effects:</em> Equivalent to: <code class="sourceCode default">return rdbuf()-&gt;native_handle();</code>.</p>
+</blockquote>
+
+</div>
+<h3 data-number="9.3.7" id="modify-class-template-basic_ofstream-ofstream"><span class="header-section-number">9.3.7</span> Modify <em>Class template
+<code class="sourceCode default">basic_ofstream</code></em> [ofstream]<a href="#modify-class-template-basic_ofstream-ofstream" class="self-link"></a></h3>
+<div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>namespace std {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  template&lt;class charT, class traits = char_traits&lt;charT&gt;&gt;</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  class basic_ofstream : public basic_ostream&lt;charT, traits&gt; {</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  public:</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    using char_type   = charT;</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    using int_type    = typename traits::int_type;</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    using pos_type    = typename traits::pos_type;</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    using off_type    = typename traits::off_type;</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    using traits_type = traits;</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="va">+   using native_handle_type =</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="va">+     typename basic_filebuf&lt;charT, traits&gt;::native_handle_type;</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    // ...</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    // [ofstream.members], members</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    basic_filebuf&lt;charT, traits&gt;* rdbuf() const;</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="va">+   native_handle_type native_handle();</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    bool is_open() const;</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    // ...</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<h3 data-number="9.3.8" id="add-to-member-functions-ofstream.members-after-p1"><span class="header-section-number">9.3.8</span> Add to <em>Member
+functions</em> [ofstream.members] after p1<a href="#add-to-member-functions-ofstream.members-after-p1" class="self-link"></a></h3>
+<p>This would come between the definitions of
+<code class="sourceCode default">basic_ofstream::rdbuf()</code> (p1) and
+<code class="sourceCode default">basic_ofstream::is_open()</code> (p2,
+now p3).</p>
+<div class="add" style="color: #006e28">
+
+<blockquote>
+<div class="sourceCode" id="cb13"><pre class="sourceCode default default"><code class="sourceCode default"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>native_handle_type native_handle();</span></code></pre></div>
+<p> <em>Effects:</em> Equivalent to: <code class="sourceCode default">return rdbuf()-&gt;native_handle();</code>.</p>
+</blockquote>
+
+</div>
+<h3 data-number="9.3.9" id="modify-class-template-basic_fstream-fstream"><span class="header-section-number">9.3.9</span> Modify <em>Class template
+<code class="sourceCode default">basic_fstream</code></em> [fstream]<a href="#modify-class-template-basic_fstream-fstream" class="self-link"></a></h3>
+<div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>namespace std {</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  template&lt;class charT, class traits = char_traits&lt;charT&gt;&gt;</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  class basic_fstream : public basic_iostream&lt;charT, traits&gt; {</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  public:</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    using char_type   = charT;</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    using int_type    = typename traits::int_type;</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    using pos_type    = typename traits::pos_type;</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    using off_type    = typename traits::off_type;</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    using traits_type = traits;</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="va">+   using native_handle_type =</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="va">+     typename basic_filebuf&lt;charT, traits&gt;::native_handle_type;</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    // ...</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    // [fstream.members], members</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    basic_filebuf&lt;charT, traits&gt;* rdbuf() const;</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="va">+   native_handle_type native_handle();</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="va">+</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    bool is_open() const;</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    // ...</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<h3 data-number="9.3.10" id="add-to-member-functions-fstream.members-after-p1"><span class="header-section-number">9.3.10</span> Add to <em>Member
+functions</em> [fstream.members] after p1<a href="#add-to-member-functions-fstream.members-after-p1" class="self-link"></a></h3>
+<p>This would come between the definitions of
+<code class="sourceCode default">basic_fstream::rdbuf()</code> (p1) and
+<code class="sourceCode default">basic_fstream::is_open()</code> (p2,
+now p3).</p>
+<div class="add" style="color: #006e28">
+
+<blockquote>
+<div class="sourceCode" id="cb15"><pre class="sourceCode default default"><code class="sourceCode default"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>native_handle_type native_handle();</span></code></pre></div>
+<p> <em>Effects:</em> Equivalent to: <code class="sourceCode default">return rdbuf()-&gt;native_handle();</code>.</p>
+</blockquote>
+
+</div>
+<h1 data-number="10" id="acknowledgements"><span class="header-section-number">10</span> Acknowledgements<a href="#acknowledgements" class="self-link"></a></h1>
+<p>Thanks to Jonathan Wakely for reviewing the wording for R3 of this
+paper.</p>
+<p>Thanks to Niall Douglas for feedback, encouragement and ambitious
+suggestions for this paper.</p>
+<p>Thanks to the rest of the co-authors of <span class="citation" data-cites="P1750">[<a href="#ref-P1750" role="doc-biblioref">P1750R1</a>]</span> for the idea after cutting this
+functionality out, especially to Jeff Garland for providing a heads-up
+about a possible ABI-break that I totally would’ve missed, even though
+it ended up being a non-issue.</p>
+<p>Thanks to Michael Park for his paper markup framework <span class="citation" data-cites="mpark-wg21">[<a href="#ref-mpark-wg21" role="doc-biblioref">mpark/wg21</a>]</span>.</p>
+<h1 data-number="11" id="bibliography"><span class="header-section-number">11</span> References<a href="#bibliography" class="self-link"></a></h1>
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-access-file-descriptors" class="csl-entry" role="doc-biblioentry">
+[access-file-descriptors] Bruce S. O. Adams. file streams and access to
+the file descriptor. <a href="https://docs.google.com/viewer?a=v&amp;pid=forums&amp;srcid=MTEwODAzNzI2MjM1OTc0MjE3MjkBMDY0OTY1OTUzMjAwNzY0MTA0MjkBakhWMHBFLUNGd0FKATAuMQFpc29jcHAub3JnAXYy&amp;authuser=0"><div class="csl-block">https://docs.google.com/viewer?a=v&amp;pid=forums&amp;srcid=MTEwODAzNzI2MjM1OTc0MjE3MjkBMDY0OTY1OTUzMjAwNzY0MTA0MjkBakhWMHBFLUNGd0FKATAuMQFpc29jcHAub3JnAXYy&amp;authuser=0</div></a>
+</div>
+<div id="ref-Boost.IOStreams" class="csl-entry" role="doc-biblioentry">
+[Boost.IOStreams] Jonathan Turkanis. Boost.IOStreams. <a href="https://www.boost.org/doc/libs/1_71_0/libs/iostreams/doc/index.html"><div class="csl-block">https://www.boost.org/doc/libs/1_71_0/libs/iostreams/doc/index.html</div></a>
+</div>
+<div id="ref-mpark-wg21" class="csl-entry" role="doc-biblioentry">
+[mpark/wg21] mpark/wg21 on GitHub. <a href="https://github.com/mpark/wg21"><div class="csl-block">https://github.com/mpark/wg21</div></a>
+</div>
+<div id="ref-N4734" class="csl-entry" role="doc-biblioentry">
+[N4734] Jonathan Wakely. 2018. Working Draft, C++ Extensions for
+Networking. <a href="https://wg21.link/N4734"><div class="csl-block">https://wg21.link/N4734</div></a>
+</div>
+<div id="ref-N4849" class="csl-entry" role="doc-biblioentry">
+[N4849] Richard Smith. 2020-01-14. Working Draft, Standard for
+Programming Language C++. <a href="https://wg21.link/n4849"><div class="csl-block">https://wg21.link/n4849</div></a>
+</div>
+<div id="ref-N4892" class="csl-entry" role="doc-biblioentry">
+[N4892] Richard Smith. 2022. Working Draft, Standard for Programming
+Language C++. <a href="https://wg21.link/N4892"><div class="csl-block">https://wg21.link/N4892</div></a>
+</div>
+<div id="ref-P1031" class="csl-entry" role="doc-biblioentry">
+[P1031R2] Niall Douglas. 2019. Low level file i/o library. <a href="https://wg21.link/p1031r2"><div class="csl-block">https://wg21.link/p1031r2</div></a>
+</div>
+<div id="ref-P1750" class="csl-entry" role="doc-biblioentry">
+[P1750R1] Klemens Morgernstern, Jeff Garland, Elias Kosunen, and Fatih
+Bakir. 2019. A Proposal to Add Process Management to the C++ Standard
+Library. <a href="https://wg21.link/p1750r1"><div class="csl-block">https://wg21.link/p1750r1</div></a>
+</div>
+<div id="ref-P2146" class="csl-entry" role="doc-biblioentry">
+[P2146R2] Amanda Kornoushenko. 2020. Modern std::byte stream IO for C++.
+<a href="https://wg21.link/p2146r2"><div class="csl-block">https://wg21.link/p2146r2</div></a>
+</div>
+<div id="ref-std-discussion-fd-io" class="csl-entry" role="doc-biblioentry">
+[std-discussion-fd-io] File descriptor-backed I/O stream? –
+std-discussion. <a href="https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/macDvhFDrjU"><div class="csl-block">https://groups.google.com/a/isocpp.org/forum/#!topic/std-discussion/macDvhFDrjU</div></a>
+</div>
+<div id="ref-std-proposals-fd-access" class="csl-entry" role="doc-biblioentry">
+[std-proposals-fd-access] file streams and access to the file descriptor
+– std-proposals. <a href="https://groups.google.com/a/isocpp.org/d/topic/std-proposals/XcQ4FZJKDbM/discussion"><div class="csl-block">https://groups.google.com/a/isocpp.org/d/topic/std-proposals/XcQ4FZJKDbM/discussion</div></a>
+</div>
+<div id="ref-std-proposals-native-handle" class="csl-entry" role="doc-biblioentry">
+[std-proposals-native-handle]
+<code class="sourceCode default">native_handle</code> for
+<code class="sourceCode default">basic_filebuf</code> – std-proposals.
+<a href="https://groups.google.com/a/isocpp.org/d/topic/std-proposals/oCEErQbI9sM/discussion"><div class="csl-block">https://groups.google.com/a/isocpp.org/d/topic/std-proposals/oCEErQbI9sM/discussion</div></a>
+</div>
+<div id="ref-std-proposals-native-raw-io" class="csl-entry" role="doc-biblioentry">
+[std-proposals-native-raw-io] Native raw IO and
+<code class="sourceCode default">FILE*</code> wrappers? – std-proposals.
+<a href="https://groups.google.com/a/isocpp.org/d/topic/std-proposals/Q4RdFSZggSE/discussion"><div class="csl-block">https://groups.google.com/a/isocpp.org/d/topic/std-proposals/Q4RdFSZggSE/discussion</div></a>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
