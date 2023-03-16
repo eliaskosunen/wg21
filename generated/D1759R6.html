@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="mpark/wg21" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="dcterms.date" content="2023-03-15" />
+  <meta name="dcterms.date" content="2023-03-16" />
   <title>Native handles and file streams</title>
   <style>
       code{white-space: pre-wrap;}
@@ -428,7 +428,7 @@ streams</h1>
   </tr>
   <tr>
     <td>Date:</td>
-    <td>2023-03-15</td>
+    <td>2023-03-16</td>
   </tr>
   <tr>
     <td style="vertical-align:top">Project:</td>
@@ -453,31 +453,13 @@ streams</h1>
 <h1 id="toctitle">Contents</h1>
 <ul>
 <li><a href="#abstract" id="toc-abstract"><span class="toc-section-number">1</span> Abstract<span></span></a></li>
-<li><a href="#history" id="toc-history"><span class="toc-section-number">2</span> Revision History<span></span></a>
-<ul>
-<li><a href="#r6" id="toc-r6"><span class="toc-section-number">2.1</span> R6<span></span></a></li>
-<li><a href="#r5" id="toc-r5"><span class="toc-section-number">2.2</span> R5<span></span></a></li>
-<li><a href="#r4" id="toc-r4"><span class="toc-section-number">2.3</span> R4<span></span></a></li>
-<li><a href="#r3" id="toc-r3"><span class="toc-section-number">2.4</span> R3<span></span></a></li>
-<li><a href="#r2" id="toc-r2"><span class="toc-section-number">2.5</span> R2<span></span></a></li>
-<li><a href="#r1" id="toc-r1"><span class="toc-section-number">2.6</span> R1<span></span></a></li>
-<li><a href="#r0" id="toc-r0"><span class="toc-section-number">2.7</span> R0<span></span></a></li>
-</ul></li>
-<li><a href="#design" id="toc-design"><span class="toc-section-number">3</span> Design Discussion<span></span></a>
-<ul>
-<li><a href="#impl-defined" id="toc-impl-defined"><span class="toc-section-number">3.1</span> Implementation-definedness of
-native handles and presence of them<span></span></a></li>
-</ul></li>
+<li><a href="#history" id="toc-history"><span class="toc-section-number">2</span> Revision
+History<span></span></a></li>
+<li><a href="#design" id="toc-design"><span class="toc-section-number">3</span> Design
+Discussion<span></span></a></li>
 <li><a href="#implementation" id="toc-implementation"><span class="toc-section-number">4</span> Implementation<span></span></a></li>
 <li><a href="#specification" id="toc-specification"><span class="toc-section-number">5</span> Technical
-Specifications<span></span></a>
-<ul>
-<li><a href="#notes" id="toc-notes"><span class="toc-section-number">5.1</span> Wording
-notes<span></span></a></li>
-<li><a href="#ft-macro" id="toc-ft-macro"><span class="toc-section-number">5.2</span> Feature test
-macro<span></span></a></li>
-<li><a href="#wording" id="toc-wording"><span class="toc-section-number">5.3</span> Wording<span></span></a></li>
-</ul></li>
+Specifications<span></span></a></li>
 <li><a href="#acknowledgements" id="toc-acknowledgements"><span class="toc-section-number">6</span>
 Acknowledgements<span></span></a></li>
 <li><a href="#bibliography" id="toc-bibliography"><span class="toc-section-number">7</span> References<span></span></a></li>
@@ -712,11 +694,10 @@ following reference implementations use these.</p>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">// Repeat for ofstream and fstream</span></span></code></pre></div>
 <h1 data-number="5" id="specification"><span class="header-section-number">5</span> Technical Specifications<a href="#specification" class="self-link"></a></h1>
-<h2 data-number="5.1" id="notes"><span class="header-section-number">5.1</span> Wording notes<a href="#notes" class="self-link"></a></h2>
 <p>The wording is based on <span class="citation" data-cites="N4928">[<a href="#ref-N4928" role="doc-biblioref">N4928</a>]</span>.</p>
-<h2 data-number="5.2" id="ft-macro"><span class="header-section-number">5.2</span> Feature test macro<a href="#ft-macro" class="self-link"></a></h2>
-<p>This paper proposes adding a feature test macro, called
-<code class="sourceCode default">__cpp_lib_fstream_native_handle</code>.</p>
+<p><em>Note to editor:</em> In the wording below, replace the character
+� with the appropriate section or note number.</p>
+<h2 data-number="5.1" id="ft-macro"><span class="header-section-number">5.1</span> Feature-test macro<a href="#ft-macro" class="self-link"></a></h2>
 <p><em>Note to editor:</em> Add the macro below to the appropriate place
 in <span>17.3.2
 <a href="https://wg21.link/version.syn">[version.syn]</a></span>,
@@ -727,12 +708,9 @@ Also, set the value of the macro to the date of adoption.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode default default"><code class="sourceCode default"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>#define __cpp_lib_fstream_native_handle 202XXXL  // also in &lt;fstream&gt;</span></code></pre></div>
 
 </div>
-<h2 data-number="5.3" id="wording"><span class="header-section-number">5.3</span> Wording<a href="#wording" class="self-link"></a></h2>
-<p><em>Note to editor:</em> In the wording below, replace the character
-� with the appropriate section or note number.</p>
-<h3 data-number="5.3.1" id="add-the-following-section-into-file-based-streams-file.streams"><span class="header-section-number">5.3.1</span> Add the following section
-into <em>File-based streams</em> <span>31.10
-<a href="https://wg21.link/file.streams">[file.streams]</a></span><a href="#add-the-following-section-into-file-based-streams-file.streams" class="self-link"></a></h3>
+<h2 data-number="5.2" id="add-the-following-section-into-file-based-streams-file.streams"><span class="header-section-number">5.2</span> Add the following section into
+<em>File-based streams</em> <span>31.10
+<a href="https://wg21.link/file.streams">[file.streams]</a></span><a href="#add-the-following-section-into-file-based-streams-file.streams" class="self-link"></a></h2>
 <p>This section is to come between <span>31.10.1
 <a href="https://wg21.link/fstream.syn">[fstream.syn]</a></span> and
 <span>31.10.2
@@ -756,9 +734,9 @@ systems, <code class="sourceCode default">native_handle_type</code> is
 </blockquote>
 
 </div>
-<h3 data-number="5.3.2" id="modify-class-template-basic_filebuf-filebuf"><span class="header-section-number">5.3.2</span> Modify <em>Class template
+<h2 data-number="5.3" id="modify-class-template-basic_filebuf-filebuf"><span class="header-section-number">5.3</span> Modify <em>Class template
 <code class="sourceCode default">basic_filebuf</code></em> <span>31.10.2
-<a href="https://wg21.link/filebuf">[filebuf]</a></span><a href="#modify-class-template-basic_filebuf-filebuf" class="self-link"></a></h3>
+<a href="https://wg21.link/filebuf">[filebuf]</a></span><a href="#modify-class-template-basic_filebuf-filebuf" class="self-link"></a></h2>
 <div>
 <div class="sourceCode" id="cb6"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>namespace std {</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  template&lt;class charT, class traits = char_traits&lt;charT&gt;&gt;</span>
@@ -789,9 +767,9 @@ systems, <code class="sourceCode default">native_handle_type</code> is
 <span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<h3 data-number="5.3.3" id="modify-class-template-basic_filebuf-filebuf-1"><span class="header-section-number">5.3.3</span> Modify <em>Class template
+<h2 data-number="5.4" id="modify-class-template-basic_filebuf-filebuf-1"><span class="header-section-number">5.4</span> Modify <em>Class template
 <code class="sourceCode default">basic_filebuf</code></em> <span>31.10.2
-<a href="https://wg21.link/filebuf">[filebuf]</a></span><a href="#modify-class-template-basic_filebuf-filebuf-1" class="self-link"></a></h3>
+<a href="https://wg21.link/filebuf">[filebuf]</a></span><a href="#modify-class-template-basic_filebuf-filebuf-1" class="self-link"></a></h2>
 <blockquote>
 <p> An instance of <code class="sourceCode default">basic_filebuf</code>
 behaves as described in [filebuf] provided
@@ -817,9 +795,9 @@ conversion, conversions are performed using members of a facet, referred
 to as <code class="sourceCode default">a_codecvt</code> in the following
 subclauses, obtained as if by…</p>
 </blockquote>
-<h3 data-number="5.3.4" id="add-to-the-end-of-member-functions-filebuf.members"><span class="header-section-number">5.3.4</span> Add to the end of <em>Member
+<h2 data-number="5.5" id="add-to-the-end-of-member-functions-filebuf.members"><span class="header-section-number">5.5</span> Add to the end of <em>Member
 functions</em> <span>31.10.2.4
-<a href="https://wg21.link/filebuf.members">[filebuf.members]</a></span><a href="#add-to-the-end-of-member-functions-filebuf.members" class="self-link"></a></h3>
+<a href="https://wg21.link/filebuf.members">[filebuf.members]</a></span><a href="#add-to-the-end-of-member-functions-filebuf.members" class="self-link"></a></h2>
 <p><em>Note:</em> This would come after the defintion of
 <code class="sourceCode default">basic_filebuf::close()</code>.</p>
 <div class="add" style="color: #006e28">
@@ -835,10 +813,10 @@ functions</em> <span>31.10.2.4
 </blockquote>
 
 </div>
-<h3 data-number="5.3.5" id="modify-class-template-basic_ifstream-ifstream"><span class="header-section-number">5.3.5</span> Modify <em>Class template
+<h2 data-number="5.6" id="modify-class-template-basic_ifstream-ifstream"><span class="header-section-number">5.6</span> Modify <em>Class template
 <code class="sourceCode default">basic_ifstream</code></em>
 <span>31.10.3
-<a href="https://wg21.link/ifstream">[ifstream]</a></span><a href="#modify-class-template-basic_ifstream-ifstream" class="self-link"></a></h3>
+<a href="https://wg21.link/ifstream">[ifstream]</a></span><a href="#modify-class-template-basic_ifstream-ifstream" class="self-link"></a></h2>
 <div>
 <div class="sourceCode" id="cb8"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>namespace std {</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  template&lt;class charT, class traits = char_traits&lt;charT&gt;&gt;</span>
@@ -863,9 +841,9 @@ functions</em> <span>31.10.2.4
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<h3 data-number="5.3.6" id="add-to-member-functions-ifstream.members"><span class="header-section-number">5.3.6</span> Add to <em>Member
+<h2 data-number="5.7" id="add-to-member-functions-ifstream.members"><span class="header-section-number">5.7</span> Add to <em>Member
 functions</em> <span>31.10.3.4
-<a href="https://wg21.link/ifstream.members">[ifstream.members]</a></span><a href="#add-to-member-functions-ifstream.members" class="self-link"></a></h3>
+<a href="https://wg21.link/ifstream.members">[ifstream.members]</a></span><a href="#add-to-member-functions-ifstream.members" class="self-link"></a></h2>
 <blockquote>
 <div class="sourceCode" id="cb9"><pre class="sourceCode default"><code class="sourceCode default"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>basic_filebuf&lt;charT, traits&gt;* rdbuf() const;</span></code></pre></div>
 <p> <em>Returns:</em> <code class="sourceCode default">const_cast&lt;basic_filebuf&lt;charT, traits&gt;*&gt;(addressof(sb))</code>.</p>
@@ -884,10 +862,10 @@ functions</em> <span>31.10.3.4
 <p> <em>Returns:</em>
 <code class="sourceCode default">rdbuf()-&gt;is_open()</code>.</p>
 </blockquote>
-<h3 data-number="5.3.7" id="modify-class-template-basic_ofstream-ofstream"><span class="header-section-number">5.3.7</span> Modify <em>Class template
+<h2 data-number="5.8" id="modify-class-template-basic_ofstream-ofstream"><span class="header-section-number">5.8</span> Modify <em>Class template
 <code class="sourceCode default">basic_ofstream</code></em>
 <span>31.10.4
-<a href="https://wg21.link/ofstream">[ofstream]</a></span><a href="#modify-class-template-basic_ofstream-ofstream" class="self-link"></a></h3>
+<a href="https://wg21.link/ofstream">[ofstream]</a></span><a href="#modify-class-template-basic_ofstream-ofstream" class="self-link"></a></h2>
 <div>
 <div class="sourceCode" id="cb12"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>namespace std {</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  template&lt;class charT, class traits = char_traits&lt;charT&gt;&gt;</span>
@@ -912,9 +890,9 @@ functions</em> <span>31.10.3.4
 <span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<h3 data-number="5.3.8" id="add-to-member-functions-ofstream.members"><span class="header-section-number">5.3.8</span> Add to <em>Member
+<h2 data-number="5.9" id="add-to-member-functions-ofstream.members"><span class="header-section-number">5.9</span> Add to <em>Member
 functions</em> <span>31.10.4.4
-<a href="https://wg21.link/ofstream.members">[ofstream.members]</a></span><a href="#add-to-member-functions-ofstream.members" class="self-link"></a></h3>
+<a href="https://wg21.link/ofstream.members">[ofstream.members]</a></span><a href="#add-to-member-functions-ofstream.members" class="self-link"></a></h2>
 <p><em>Note:</em> These modifications are identical to those done to
 <span>31.10.3.4
 <a href="https://wg21.link/ifstream.members">[ifstream.members]</a></span>
@@ -937,9 +915,9 @@ above</p>
 <p> <em>Returns:</em>
 <code class="sourceCode default">rdbuf()-&gt;is_open()</code>.</p>
 </blockquote>
-<h3 data-number="5.3.9" id="modify-class-template-basic_fstream-fstream"><span class="header-section-number">5.3.9</span> Modify <em>Class template
+<h2 data-number="5.10" id="modify-class-template-basic_fstream-fstream"><span class="header-section-number">5.10</span> Modify <em>Class template
 <code class="sourceCode default">basic_fstream</code></em> <span>31.10.5
-<a href="https://wg21.link/fstream">[fstream]</a></span><a href="#modify-class-template-basic_fstream-fstream" class="self-link"></a></h3>
+<a href="https://wg21.link/fstream">[fstream]</a></span><a href="#modify-class-template-basic_fstream-fstream" class="self-link"></a></h2>
 <div>
 <div class="sourceCode" id="cb16"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>namespace std {</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  template&lt;class charT, class traits = char_traits&lt;charT&gt;&gt;</span>
@@ -964,9 +942,9 @@ above</p>
 <span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<h3 data-number="5.3.10" id="add-to-member-functions-fstream.members"><span class="header-section-number">5.3.10</span> Add to <em>Member
+<h2 data-number="5.11" id="add-to-member-functions-fstream.members"><span class="header-section-number">5.11</span> Add to <em>Member
 functions</em> <span>31.10.5.4
-<a href="https://wg21.link/fstream.members">[fstream.members]</a></span><a href="#add-to-member-functions-fstream.members" class="self-link"></a></h3>
+<a href="https://wg21.link/fstream.members">[fstream.members]</a></span><a href="#add-to-member-functions-fstream.members" class="self-link"></a></h2>
 <p><em>Note:</em> These modifications are identical to those done to
 <span>31.10.3.4
 <a href="https://wg21.link/ifstream.members">[ifstream.members]</a></span>
