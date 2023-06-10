@@ -1,0 +1,118 @@
+<pre class='metadata'>
+Title: Type-erased ranges with <code>ranges::any_view</code>
+Shortname: D2908
+Revision: 0
+Audience: LEWG, SG9
+Status: D
+Group: WG21
+URL: http://wg21.link/P2908R0.html
+Editor: Elias Kosunen, isocpp@eliaskosunen.com
+Abstract:
+    This paper proposes adding a new view type, <code>std::ranges::any_view</code>,
+    based on range-v3, that type-erases its argument, and provides
+    an interface that models the requested concept.
+Date: 2023-06-05
+Markup Shorthands: markdown yes
+Max ToC Depth: 2
+</pre>
+
+Motivation {#motivation}
+==========
+
+In [[P1729]], there's a need for type-erasing a `forward_range`,
+when passing it from `std::scan` to `std::vscan`.
+In a fashion similar to `std::format`, the range used as the source
+is type-erased when given to `std::vscan`, alongside the arguments to scan.
+
+```c++
+// simplified
+template <typename... Args, scannable_range<char> Range>
+auto scan(Range&& r, format_string fmt) {
+    // ...
+    auto range = map_scan_input_range(r);
+    auto /* ... */ = vscan(range, /* ... */);
+    // ...
+}
+
+auto vscan(string_view range, /* ... */);
+auto vscan(erased_scannable_range range, /* ... */);
+```
+
+In [[RANGE-V3]], there's `any_view`, which is a more general case
+of `erased_scannable_range`. Given how this facility could also be useful
+outside of `std::scan`, this paper proposes adopting a view type
+similar to `any_view`.
+
+Design {#design}
+======
+
+`ranges::any_view`, as proposed in this paper, is based on `any_view` in [[RANGE-V3]].
+It's a class template, with two template arguments: `Ref`, which is the reference type
+of the wrapped range, and `Cat`, which is the concept modeled by the `any_view`.
+
+```c++
+namespace std::ranges {
+
+    enum class category;
+
+    namespace views {
+
+        template <class Ref, category Cat = category::input>
+        class any_view;
+
+    } // namespace views
+} // namespace std::ranges
+```
+
+`category` is a <i>bitmask type</i>, with elements mapping to different range concepts.
+
+<pre highlight=cpp>
+enum class category {
+    <i>input-tag</i> = <i>unspecified</i>,
+    <i>forward-tag</i> = <i>unspecified</i>,
+    <i>bidirectional-tag</i> = <i>unspecified</i>,
+    <i>random-access-tag</i> = <i>unspecified</i>,
+    <i>contiguous-tag</i> = <i>unspecified</i>,
+    <i>sized-tag</i> = <i>unspecified</i>,
+
+    none = 0,
+
+    input = <i>input-tag</i>,
+    forward = input | <i>forward-tag</i>,
+    bidirectional = forward | <i>bidirectional-tag</i>,
+    random_access = bidirectional | <i>random-access-tag</i>,
+    contiguous = random_access | <i>contiguous-tag</i>,
+    <i>iterator-category-mask</i> = contiguous,
+
+    sized = <i>sized-tag</i>
+};
+</pre>
+
+`any_view` inherits from `view_interface`.
+
+<pre highlight=cpp>
+template &lt;typename Ref, category Cat&gt;
+class any_view {
+private:
+    
+
+    class <i>iterator</i>; // exposition only
+
+    class <i>sentinel</i>; // exposition only
+};
+</pre>
+
+<pre class=biblio>
+{
+  "P1729": {
+    "title": "Text Parsing",
+    "authors": ["Elias Kosunen", "Victor Zverovich"],
+    "href": "https://wg21.link/p1729"
+  },
+  "RANGE-V3": {
+    "title": "range-v3",
+    "authors": ["Eric Niebler et al"],
+    "href": "https://github.com/ericniebler/range-v3"
+  }
+}
+</pre>
