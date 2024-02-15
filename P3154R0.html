@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="http://wg21.link/P3154R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="837b431b31c81b846108786f2cddb44804a16193" name="revision">
+  <meta content="32717691cd1084d80052b25f1bb4691e2867632f" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2120,12 +2120,12 @@ when using the aliases <code class="highlight"><c- b>int8_t</c-></code> or <code
     <li>
      <a href="#wording"><span class="secno">3</span> <span class="content">Wording</span></a>
      <ol class="toc">
-      <li><a href="#modify-istreamgeneral-p1"><span class="secno">3.1</span> <span class="content">Modify <span>[istream.general</span>] p1:</span></a>
-      <li><a href="#modify-istreamextractors-around-p7-to-p12"><span class="secno">3.2</span> <span class="content">Modify <span>[istream.extractors</span>], around p7 to p12:</span></a>
-      <li><a href="#modify-ostreamgeneral-p1"><span class="secno">3.3</span> <span class="content">Modify <span>[ostream.general</span>] p1:</span></a>
-      <li><a href="#modify-ostreaminserterscharacter"><span class="secno">3.4</span> <span class="content">Modify <span>[ostream.inserters.character</span>]:</span></a>
-      <li><a href="#add-a-new-subclause-in-annex-d-after-depratomics"><span class="secno">3.5</span> <span class="content">Add a new subclause in Annex D after <span>[depr.atomics</span>]:</span></a>
-      <li><a href="#add-a-new-subclause-in-annex-d-after-the-above-depristreamextractors"><span class="secno">3.6</span> <span class="content">Add a new subclause in Annex D after the above ([depr.istream.extractors]):</span></a>
+      <li><a href="#modify-istreamgeneral-p1"><span class="secno">3.1</span> <span class="content">Modify <span>[istream.general</span>] p1</span></a>
+      <li><a href="#modify-istreamextractors-around-p7-to-p12"><span class="secno">3.2</span> <span class="content">Modify <span>[istream.extractors</span>], around p7 to p12</span></a>
+      <li><a href="#modify-ostreamgeneral-p1"><span class="secno">3.3</span> <span class="content">Modify <span>[ostream.general</span>] p1</span></a>
+      <li><a href="#modify-ostreaminserterscharacter"><span class="secno">3.4</span> <span class="content">Modify <span>[ostream.inserters.character</span>]</span></a>
+      <li><a href="#add-a-new-subclause-in-annex-d-after-depratomics"><span class="secno">3.5</span> <span class="content">Add a new subclause in Annex D after <span>[depr.atomics</span>]</span></a>
+      <li><a href="#add-a-new-subclause-in-annex-d-after-the-above-depristreamextractors"><span class="secno">3.6</span> <span class="content">Add a new subclause in Annex D after the above ([depr.istream.extractors])</span></a>
      </ol>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2159,7 +2159,7 @@ that take an <code class="highlight"><c- p>(</c-><c- n>un</c-><c- p>)</c-><c- b>
 In addition, there are overloads for <code class="highlight"><c- k>operator</c-><c- o>>></c-></code> for <code class="highlight"><c- n>basic_istream</c-></code>,
 that take an <code class="highlight"><c- p>(</c-><c- n>un</c-><c- p>)</c-><c- b>signed</c-> <c- b>char</c-><c- o>&amp;</c-></code> and an <code class="highlight"><c- p>(</c-><c- n>un</c-><c- p>)</c-><c- b>signed</c-> <c- b>char</c-> <c- p>(</c-><c- o>&amp;</c-><c- p>)[</c-><c- n>N</c-><c- p>]</c-></code>.
 These overloads are specified to have equivalent behavior to
-the non-signedness qualified overloads.</p>
+the non-signedness qualified overloads: <a href="https://eel.is/c++draft/istream.extractors">[istream.extractors</a>] <a href="https://eel.is/c++draft/ostream.inserters.character">[ostream.inserters.character</a>].</p>
    <p>This is surprising. Per <a href="https://eel.is/c++draft/basic.fundamental#1">[basic.fundamental</a>] p1 and p2:</p>
    <blockquote>
     <p>There are five <i>standard signed integer types</i>:
@@ -2174,24 +2174,23 @@ The standard and extended unsigned integer types are collectively called <i>unsi
    </blockquote>
    <p>Thus, <code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> should be treated as integers, not as characters.
 This is highlighted by the fact, that <code class="highlight"><c- b>int8_t</c-></code> and <code class="highlight"><c- b>uint8_t</c-></code> are specified to be aliases to (un)signed integer types,
-whcih are in practice going to be <code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code>.</p>
+which are in practice going to be <code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code>.</p>
    <p class="note" role="note"><span class="marker">Note:</span> The Solaris implementation is different, and defines <code class="highlight"><c- b>int8_t</c-></code> to be <code class="highlight"><c- b>char</c-></code> by default.
-This is most likely not conformant.</p>
+This is not conformant.</p>
    <p><code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> are not character types.
-Per <a href="https://eel.is/c++draft/basic.fundamental#11">[basic.fundamental</a>] p11, after <a data-link-type="biblio" href="#biblio-p2314r4" title="Character sets and encodings">[P2314R4]</a>:</p>
+Per <a href="https://eel.is/c++draft/basic.fundamental#11">[basic.fundamental</a>] p11, since <a data-link-type="biblio" href="#biblio-p2314r4" title="Character sets and encodings">[P2314R4]</a>:</p>
    <blockquote>
     <p>The types <code class="highlight"><c- b>char</c-></code>, <code class="highlight"><c- b>wchar_t</c-></code>, <code class="highlight"><c- b>char8_t</c-></code>, <code class="highlight"><c- b>char16_t</c-></code>, and <code class="highlight"><c- b>char32_t</c-></code> are collectively called <i>character types</i>.</p>
    </blockquote>
-   <p><code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> are included in the set of <i>ordinary character types</i>.
-and <i>narrow character types</i>, but these definitions are used for specifying
+   <p><code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> are included in the set of <i>ordinary character types</i> and <i>narrow character types</i>, but these definitions are used for specifying
 alignment, padding, and <i>indeterminate values</i> (<a href="https://eel.is/c++draft/basic.indet">[basic.indet</a>]),
 and are arguably not related to characters in the sense of pieces of text.</p>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> has already taken a step in the right direction here,
 by treating <code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> as integers.
 It’s specified to not give special treatment to these types,
 but to use the standard definitions of (un)signed integer type
-to determine whether a type is to be treated as an integer.</p>
-   <p>This paper proposes, that these overloads in iostreams should be deprecated.</p>
+to determine whether a type is to be treated as an integer when formatting.</p>
+   <p>This paper proposes that these overloads in iostreams should be deprecated.</p>
    <h2 class="heading settled" data-level="2" id="impact"><span class="secno">2. </span><span class="content">Impact</span><a class="self-link" href="#impact"></a></h2>
    <p>It’s difficult to find examples where this is the sought-after behavior, and would become deprecated with this change.
 These snippets aren’t easily greppable.</p>
@@ -2202,7 +2201,7 @@ as integers. Some of them can be found with <a href="https://codesearch.isocpp.o
    <p>These overloads have existed since C++98.</p>
    <h2 class="heading settled" data-level="3" id="wording"><span class="secno">3. </span><span class="content">Wording</span><a class="self-link" href="#wording"></a></h2>
    <p>This wording is relative to <a data-link-type="biblio" href="#biblio-n4971" title="Working Draft, Programming Languages — C++">[N4971]</a>.</p>
-   <h3 class="heading settled" data-level="3.1" id="modify-istreamgeneral-p1"><span class="secno">3.1. </span><span class="content">Modify <a href="https://eel.is/c++draft/istream.general#1">[istream.general</a>] p1:</span><a class="self-link" href="#modify-istreamgeneral-p1"></a></h3>
+   <h3 class="heading settled" data-level="3.1" id="modify-istreamgeneral-p1"><span class="secno">3.1. </span><span class="content">Modify <a href="https://eel.is/c++draft/istream.general#1">[istream.general</a>] p1</span><a class="self-link" href="#modify-istreamgeneral-p1"></a></h3>
 <pre class="highlight"><c- c1>// ...</c->
 
 <c- c1>// [istream.extractors], character extraction templates</c->
@@ -2221,7 +2220,7 @@ as integers. Some of them can be found with <a href="https://codesearch.isocpp.o
   <c- n>basic_istream</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- k>operator</c-><c- o>>></c-><c- p>(</c-><c- n>basic_istream</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-><c- p>,</c-> <c- b>signed</c-> <c- b>char</c-><c- p>(</c-><c- o>&amp;</c-><c- p>)[</c-><c- n>N</c-><c- p>]);</c-></del>
 
 </pre>
-   <h3 class="heading settled" data-level="3.2" id="modify-istreamextractors-around-p7-to-p12"><span class="secno">3.2. </span><span class="content">Modify <a href="https://eel.is/c++draft/istream.extractors">[istream.extractors</a>], around p7 to p12:</span><a class="self-link" href="#modify-istreamextractors-around-p7-to-p12"></a></h3>
+   <h3 class="heading settled" data-level="3.2" id="modify-istreamextractors-around-p7-to-p12"><span class="secno">3.2. </span><span class="content">Modify <a href="https://eel.is/c++draft/istream.extractors">[istream.extractors</a>], around p7 to p12</span><a class="self-link" href="#modify-istreamextractors-around-p7-to-p12"></a></h3>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- b>size_t</c-> <c- n>N</c-><c- o>></c->
   <c- n>basic_istream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- k>operator</c-><c- o>>></c-><c- p>(</c-><c- n>basic_istream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-><c- p>,</c-> <c- n>charT</c-><c- p>(</c-><c- o>&amp;</c-><c- p>)[</c-><c- n>N</c-><c- p>]);</c->
 <del><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>traits</c-><c- p>,</c-> <c- b>size_t</c-> <c- n>N</c-><c- o>></c->
@@ -2258,7 +2257,7 @@ Otherwise <code class="highlight"><c- n>n</c-></code> is <code class="highlight"
 A character is extracted from <code class="highlight"><c- n>in</c-></code>, if one is available, and stored in <code class="highlight"><c- n>c</c-></code>.
 Otherwise, <code class="highlight"><c- n>ios_base</c->​<c- o>::</c->​<c- n>failbit</c-></code> is set in the input function’s local error state before <code class="highlight"><c- n>setstate</c-></code> is called.</p>
    <p><i>Returns:</i> <code class="highlight"><c- n>in</c-></code>.</p>
-   <h3 class="heading settled" data-level="3.3" id="modify-ostreamgeneral-p1"><span class="secno">3.3. </span><span class="content">Modify <a href="https://eel.is/c++draft/ostream.general">[ostream.general</a>] p1:</span><a class="self-link" href="#modify-ostreamgeneral-p1"></a></h3>
+   <h3 class="heading settled" data-level="3.3" id="modify-ostreamgeneral-p1"><span class="secno">3.3. </span><span class="content">Modify <a href="https://eel.is/c++draft/ostream.general">[ostream.general</a>] p1</span><a class="self-link" href="#modify-ostreamgeneral-p1"></a></h3>
 <pre class="highlight"><c- c1>// ...</c->
 
 <c- c1>// [ostream.inserters.character], character inserters</c->
@@ -2329,7 +2328,7 @@ Otherwise, <code class="highlight"><c- n>ios_base</c->​<c- o>::</c->​<c- n>f
 <c- c1>// ...</c->
 
 </pre>
-   <h3 class="heading settled" data-level="3.4" id="modify-ostreaminserterscharacter"><span class="secno">3.4. </span><span class="content">Modify <a href="https://eel.is/c++draft/ostream.inserters.character">[ostream.inserters.character</a>]:</span><a class="self-link" href="#modify-ostreaminserterscharacter"></a></h3>
+   <h3 class="heading settled" data-level="3.4" id="modify-ostreaminserterscharacter"><span class="secno">3.4. </span><span class="content">Modify <a href="https://eel.is/c++draft/ostream.inserters.character">[ostream.inserters.character</a>]</span><a class="self-link" href="#modify-ostreaminserterscharacter"></a></h3>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- n>charT</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-><c- p>,</c-> <c- n>charT</c-><c- p>);</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>charT</c-><c- p>,</c-> <c- k>class</c-> <c- nc>traits</c-><c- o>></c->
@@ -2386,7 +2385,7 @@ the second is of type <code class="highlight"><c- k>const</c-> <c- b>char</c-><c
 Inserts <code class="highlight"><c- n>seq</c-></code> into <code class="highlight"><c- n>out</c-></code>.
 Calls <code class="highlight"><c- n>width</c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-></code>.</p>
    <p><i>Returns:</i> <code class="highlight"><c- n>out</c-></code>.</p>
-   <h3 class="heading settled" data-level="3.5" id="add-a-new-subclause-in-annex-d-after-depratomics"><span class="secno">3.5. </span><span class="content">Add a new subclause in Annex D after <a href="https://eel.is/c++draft/depr.atomics">[depr.atomics</a>]:</span><a class="self-link" href="#add-a-new-subclause-in-annex-d-after-depratomics"></a></h3>
+   <h3 class="heading settled" data-level="3.5" id="add-a-new-subclause-in-annex-d-after-depratomics"><span class="secno">3.5. </span><span class="content">Add a new subclause in Annex D after <a href="https://eel.is/c++draft/depr.atomics">[depr.atomics</a>]</span><a class="self-link" href="#add-a-new-subclause-in-annex-d-after-depratomics"></a></h3>
    <p><b>Deprecated <code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> extraction [depr.istream.extractors]</b></p>
    <p>The following function overloads are declared in addition to those specified in <a href="https://eel.is/c++draft/istream.extractors">[istream.extractors</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>traits</c-><c- o>></c->
@@ -2421,7 +2420,7 @@ Otherwise <code class="highlight"><c- n>n</c-></code> is <code class="highlight"
    <p><code class="highlight"><c- k>operator</c-><c- o>>></c-></code> then stores a null byte (<code class="highlight"><c- n>charT</c-><c- p>()</c-></code>) in the next position, which may be the first position if no characters were extracted. <code class="highlight"><c- k>operator</c-><c- o>>></c-></code> then calls <code class="highlight"><c- n>width</c-><c- p>(</c-><c- mi>0</c-><c- p>)</c-></code>.</p>
    <p>If the function extracted no characters, <code class="highlight"><c- n>ios_base</c->​<c- o>::</c->​<c- n>failbit</c-></code> is set in the input function’s local error state before <code class="highlight"><c- n>setstate</c-></code> is called.</p>
    <p><i>Returns:</i> <code class="highlight"><c- n>in</c-></code>.</p>
-   <h3 class="heading settled" data-level="3.6" id="add-a-new-subclause-in-annex-d-after-the-above-depristreamextractors"><span class="secno">3.6. </span><span class="content">Add a new subclause in Annex D after the above ([depr.istream.extractors]):</span><a class="self-link" href="#add-a-new-subclause-in-annex-d-after-the-above-depristreamextractors"></a></h3>
+   <h3 class="heading settled" data-level="3.6" id="add-a-new-subclause-in-annex-d-after-the-above-depristreamextractors"><span class="secno">3.6. </span><span class="content">Add a new subclause in Annex D after the above ([depr.istream.extractors])</span><a class="self-link" href="#add-a-new-subclause-in-annex-d-after-the-above-depristreamextractors"></a></h3>
    <p><b>Deprecated <code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> insertion [depr.ostream.inserters]</b></p>
    <p>The following function overloads are declared in addition to those specified in <a href="https://eel.is/c++draft/ostream.inserters.character">[ostream.inserters</a>]:</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>traits</c-><c- o>></c->
@@ -2430,14 +2429,14 @@ Otherwise <code class="highlight"><c- n>n</c-></code> is <code class="highlight"
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>out</c-><c- p>,</c-> <c- b>unsigned</c-> <c- b>char</c-> <c- n>c</c-><c- p>);</c->
 
 </pre>
-   <p><i>Effects:</i> Equivalent to <code class="highlight"><c- k>return</c-> <c- n>out</c-> <c- o>&lt;&lt;</c-> <c- k>static_cast</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>(</c-><c- n>c</c-><c- p>);</c-></code>.</p>
+   <p><i>Effects:</i> Equivalent to: <code class="highlight"><c- k>return</c-> <c- n>out</c-> <c- o>&lt;&lt;</c-> <c- k>static_cast</c-><c- o>&lt;</c-><c- b>char</c-><c- o>></c-><c- p>(</c-><c- n>c</c-><c- p>);</c-></code>.</p>
 <pre class="highlight"><c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- b>signed</c-> <c- b>char</c-><c- o>*</c-> <c- n>s</c-><c- p>);</c->
 <c- k>template</c-><c- o>&lt;</c-><c- k>class</c-> <c- nc>traits</c-><c- o>></c->
   <c- n>basic_ostream</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- k>operator</c-><c- o>&lt;&lt;</c-><c- p>(</c-><c- n>basic_ostream</c-><c- o>&lt;</c-><c- b>char</c-><c- p>,</c-> <c- n>traits</c-><c- o>>&amp;</c-> <c- n>out</c-><c- p>,</c-> <c- k>const</c-> <c- b>unsigned</c-> <c- b>char</c-><c- o>*</c-> <c- n>s</c-><c- p>);</c->
 
 </pre>
-   <p><i>Effects:</i> Equivalent to <code class="highlight"><c- k>return</c-> <c- n>out</c-> <c- o>&lt;&lt;</c-> <c- k>reinterpret_cast</c-><c- o>&lt;</c-><c- k>const</c-> <c- b>char</c-><c- o>*></c-><c- p>(</c-><c- n>s</c-><c- p>);</c-></code>.</p>
+   <p><i>Effects:</i> Equivalent to: <code class="highlight"><c- k>return</c-> <c- n>out</c-> <c- o>&lt;&lt;</c-> <c- k>reinterpret_cast</c-><c- o>&lt;</c-><c- k>const</c-> <c- b>char</c-><c- o>*></c-><c- p>(</c-><c- n>s</c-><c- p>);</c-></code>.</p>
   </main>
 <script>
 (function() {

@@ -46,7 +46,9 @@ that take an `(un)signed char`, and a `const (un)signed char*`.
 In addition, there are overloads for `operator>>` for `basic_istream`,
 that take an `(un)signed char&` and an `(un)signed char (&)[N]`.
 These overloads are specified to have equivalent behavior to
-the non-signedness qualified overloads.
+the non-signedness qualified overloads:
+[[istream.extractors](https://eel.is/c++draft/istream.extractors)]
+[[ostream.inserters.character](https://eel.is/c++draft/ostream.inserters.character)].
 
 This is surprising. Per [[basic.fundamental](https://eel.is/c++draft/basic.fundamental#1)] p1 and p2:
 
@@ -64,18 +66,18 @@ This is surprising. Per [[basic.fundamental](https://eel.is/c++draft/basic.funda
 Thus, `signed char` and `unsigned char` should be treated as integers, not as characters.
 This is highlighted by the fact, that `int8_t` and `uint8_t`
 are specified to be aliases to (un)signed integer types,
-whcih are in practice going to be `signed char` and `unsigned char`.
+which are in practice going to be `signed char` and `unsigned char`.
 
 Note:
 The Solaris implementation is different, and defines `int8_t` to be `char` by default.
-This is most likely not conformant.
+This is not conformant.
 
 `signed char` and `unsigned char` are not character types.
-Per [[basic.fundamental](https://eel.is/c++draft/basic.fundamental#11)] p11, after [[P2314R4]]:
+Per [[basic.fundamental](https://eel.is/c++draft/basic.fundamental#11)] p11, since [[P2314R4]]:
 
 > The types `char`, `wchar_t`, `char8_t`, `char16_t`, and `char32_t` are collectively called <i>character types</i>.
 
-`signed char` and `unsigned char` are included in the set of <i>ordinary character types</i>.
+`signed char` and `unsigned char` are included in the set of <i>ordinary character types</i>
 and <i>narrow character types</i>, but these definitions are used for specifying
 alignment, padding, and <i>indeterminate values</i> ([[basic.indet](https://eel.is/c++draft/basic.indet)]),
 and are arguably not related to characters in the sense of pieces of text.
@@ -84,9 +86,9 @@ and are arguably not related to characters in the sense of pieces of text.
 by treating `signed char` and `unsigned char` as integers.
 It's specified to not give special treatment to these types,
 but to use the standard definitions of (un)signed integer type
-to determine whether a type is to be treated as an integer.
+to determine whether a type is to be treated as an integer when formatting.
 
-This paper proposes, that these overloads in iostreams should be deprecated.
+This paper proposes that these overloads in iostreams should be deprecated.
 
 Impact {#impact}
 ======
@@ -109,7 +111,7 @@ Wording {#wording}
 
 This wording is relative to [[N4971]].
 
-Modify [[istream.general](https://eel.is/c++draft/istream.general#1)] p1:
+Modify [[istream.general](https://eel.is/c++draft/istream.general#1)] p1
 ------------------------------------------------------------------------
 
 <pre highlight=cpp>
@@ -133,7 +135,7 @@ template&lt;class traits, size_t N&gt;
 
 </pre>
 
-Modify [[istream.extractors](https://eel.is/c++draft/istream.extractors)], around p7 to p12:
+Modify [[istream.extractors](https://eel.is/c++draft/istream.extractors)], around p7 to p12
 ------------------------------------------------------------------------
 
 <pre highlight=cpp>
@@ -183,7 +185,7 @@ Otherwise, `ios_base​::​failbit` is set in the input function's local error 
 
 <i>Returns:</i> `in`.
 
-Modify [[ostream.general](https://eel.is/c++draft/ostream.general)] p1:
+Modify [[ostream.general](https://eel.is/c++draft/ostream.general)] p1
 ----------------------------------------------------------------------
 
 <pre highlight=cpp>
@@ -259,7 +261,7 @@ template&lt;class traits&gt;
 
 </pre>
 
-Modify [[ostream.inserters.character](https://eel.is/c++draft/ostream.inserters.character)]:
+Modify [[ostream.inserters.character](https://eel.is/c++draft/ostream.inserters.character)]
 -------------------------------------------------------------------------------------------
 
 <pre highlight=cpp>
@@ -323,7 +325,7 @@ Calls `width(0)`.
 
 <i>Returns:</i> `out`.
 
-Add a new subclause in Annex D after [[depr.atomics](https://eel.is/c++draft/depr.atomics)]:
+Add a new subclause in Annex D after [[depr.atomics](https://eel.is/c++draft/depr.atomics)]
 -------------------------------------------------------------------------------------------
 
 <b>Deprecated `signed char` and `unsigned char` extraction [depr.istream.extractors]</b>
@@ -373,7 +375,7 @@ If the function extracted no characters, `ios_base​::​failbit` is set in the
 
 <i>Returns:</i> `in`.
 
-Add a new subclause in Annex D after the above ([depr.istream.extractors]):
+Add a new subclause in Annex D after the above ([depr.istream.extractors])
 --------------------------------------------------------------------------
 
 <b>Deprecated `signed char` and `unsigned char` insertion [depr.ostream.inserters]</b>
@@ -389,7 +391,7 @@ template&lt;class traits&gt;
 
 </pre>
 
-<i>Effects:</i> Equivalent to `return out << static_cast<char>(c);`.
+<i>Effects:</i> Equivalent to: `return out << static_cast<char>(c);`.
 
 <pre highlight=cpp>
 
@@ -400,4 +402,4 @@ template&lt;class traits&gt;
 
 </pre>
 
-<i>Effects:</i> Equivalent to `return out << reinterpret_cast<const char*>(s);`.
+<i>Effects:</i> Equivalent to: `return out << reinterpret_cast<const char*>(s);`.
