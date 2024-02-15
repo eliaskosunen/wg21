@@ -1,0 +1,403 @@
+<pre class='metadata'>
+Title: Deprecating signed character types in iostreams
+Shortname: P3154
+Revision: 0
+Audience: LEWG, SG16
+Status: P
+Group: WG21
+URL: http://wg21.link/P3154R0.html
+Editor: Elias Kosunen, isocpp@eliaskosunen.com
+Abstract:
+    This paper proposes deprecating overloads under iostreams,
+    that take some variant of `signed char` or `unsigned char`,
+    and treat these as characters, rather than integers.
+    The behavior of these overloads is unexpected, especially
+    when using the aliases `int8_t` or `uint8_t`.
+Date: 2024-02-15
+Markup Shorthands: markdown yes
+Max ToC Depth: 2
+</pre>
+
+Motivation {#motivation}
+==========
+
+```cpp
+#include <iostream>
+#include <format>
+
+int main() {
+    // Prints:
+    std::cout
+        << static_cast<         char>(48) << '\n'  // 0
+        << static_cast<  signed char>(48) << '\n'  // 0
+        << static_cast<unsigned char>(48) << '\n'  // 0
+        << static_cast<       int8_t>(48) << '\n'  // 0
+        << static_cast<      uint8_t>(48) << '\n'  // 0
+        << static_cast<        short>(48) << '\n'  // 48
+
+        << std::format("{}", static_cast<char>(48)) << '\n'     // 0
+        << std::format("{}", static_cast<int8_t>(48)) << '\n'   // 48
+        << std::format("{}", static_cast<uint8_t>(48)) << '\n'; // 48
+}
+```
+
+There are overloads for `operator<<` for `basic_ostream`,
+that take an `(un)signed char`, and a `const (un)signed char*`.
+In addition, there are overloads for `operator>>` for `basic_istream`,
+that take an `(un)signed char&` and an `(un)signed char (&)[N]`.
+These overloads are specified to have equivalent behavior to
+the non-signedness qualified overloads.
+
+This is surprising. Per [[basic.fundamental](https://eel.is/c++draft/basic.fundamental#1)] p1 and p2:
+
+> There are five <i>standard signed integer types</i>:
+> "`signed char`", "`short int`", "`int`", "`long int`", and "`long long int`"...
+> There may also be implementation-defined <i>extended signed integer types</i>.
+> The standard and extended signed integer types are collectively called <i>signed integer types</i>.
+>
+> For each of the standard signed integer types,
+> there exists a corresponding (but different) <i>standard unsigned integer type</i>:
+> "`unsigned char`", "`unsigned short int`", "`unsigned int`", "`unsigned long int`", and "`unsigned long long int`"...
+> Likewise, for each of the extended signed integer types, there exists a corresponding <i>extended unsigned integer types</i>.
+> The standard and extended unsigned integer types are collectively called <i>unsigned integer types</i>.
+
+Thus, `signed char` and `unsigned char` should be treated as integers, not as characters.
+This is highlighted by the fact, that `int8_t` and `uint8_t`
+are specified to be aliases to (un)signed integer types,
+whcih are in practice going to be `signed char` and `unsigned char`.
+
+Note:
+The Solaris implementation is different, and defines `int8_t` to be `char` by default.
+This is most likely not conformant.
+
+`signed char` and `unsigned char` are not character types.
+Per [[basic.fundamental](https://eel.is/c++draft/basic.fundamental#11)] p11, after [[P2314R4]]:
+
+> The types `char`, `wchar_t`, `char8_t`, `char16_t`, and `char32_t` are collectively called <i>character types</i>.
+
+`signed char` and `unsigned char` are included in the set of <i>ordinary character types</i>.
+and <i>narrow character types</i>, but these definitions are used for specifying
+alignment, padding, and <i>indeterminate values</i> ([[basic.indet](https://eel.is/c++draft/basic.indet)]),
+and are arguably not related to characters in the sense of pieces of text.
+
+`std::format` has already taken a step in the right direction here,
+by treating `signed char` and `unsigned char` as integers.
+It's specified to not give special treatment to these types,
+but to use the standard definitions of (un)signed integer type
+to determine whether a type is to be treated as an integer.
+
+This paper proposes, that these overloads in iostreams should be deprecated.
+
+Impact {#impact}
+======
+
+It's difficult to find examples where this is the sought-after behavior, and would become deprecated with this change.
+These snippets aren't easily greppable.
+
+It's easy to find counter-examples, however, where workarounds have to be employed to insert or extract `signed char`s or `unsigned char`s
+as integers. Some of them can be found with [isocpp.org codesearch](https://codesearch.isocpp.org/cgi-bin/cgi_ppsearch?q=%3C%3C+static_cast%3Cint%3E&amp;search=Search)
+by searching for `<< static_cast<int>` or `<< (int)`, although false positives there are very prevalent.
+
+```cpp
+/* ... */ << static_cast<int>(my_schar);
+```
+
+These overloads have existed since C++98.
+
+Wording {#wording}
+=======
+
+This wording is relative to [[N4971]].
+
+Modify [[istream.general](https://eel.is/c++draft/istream.general#1)] p1:
+------------------------------------------------------------------------
+
+<pre highlight=cpp>
+
+// ...
+
+// [istream.extractors], character extraction templates
+template&lt;class charT, class traits&gt;
+  basic_istream&lt;charT, traits&gt;& operator&gt;&gt;(basic_istream&lt;charT, traits&gt;&, charT&);
+<del>template&lt;class traits&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;&, unsigned char&);
+template&lt;class traits&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;&, signed char&);</del>
+
+template&lt;class charT, class traits, size_t N&gt;
+  basic_istream&lt;charT, traits&gt;& operator&gt;&gt;(basic_istream&lt;charT, traits&gt;&, charT(&)&lsqb;N&rsqb;);
+<del>template&lt;class traits, size_t N&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;&, unsigned char(&)&lsqb;N&rsqb;);
+template&lt;class traits, size_t N&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;&, signed char(&)&lsqb;N&rsqb;);</del>
+
+</pre>
+
+Modify [[istream.extractors](https://eel.is/c++draft/istream.extractors)], around p7 to p12:
+------------------------------------------------------------------------
+
+<pre highlight=cpp>
+
+template&lt;class charT, class traits, size_t N&gt;
+  basic_istream&lt;charT, traits&gt;& operator&gt;&gt;(basic_istream&lt;charT, traits&gt;&, charT(&)&lsqb;N&rsqb;);
+<del>template&lt;class traits, size_t N&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;&, unsigned char(&)&lsqb;N&rsqb;);
+template&lt;class traits, size_t N&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;&, signed char(&)&lsqb;N&rsqb;);</del>
+
+</pre>
+
+<i>Effects:</i> Behaves like a formatted input member (as described in [istream.formatted.reqmts]) of `in`.
+After a sentry object is constructed, `operator>>` extracts characters and stores them into `s`.
+If `width()` is greater than zero, `n` is `min(size_t(width()), N)`.
+Otherwise `n` is `N`.
+`n` is the maximum number of characters stored.
+
+Characters are extracted and stored until any of the following occurs:
+
+ - `n-1` characters are stored;
+ - end of file occurs on the input sequence;
+ - letting `ct` be `use_facet<ctype<charT>>(in.getloc())`, `ct.is(ct.space, c)` is `true`.
+
+`operator>>` then stores a null byte (`charT()`) in the next position, which may be the first position if no characters were extracted.
+`operator>>` then calls `width(0)`.
+
+If the function extracted no characters, `ios_base​::​failbit` is set in the input function's local error state before `setstate` is called.
+
+<i>Returns:</i> `in`.
+
+<pre highlight=cpp>
+
+template&lt;class charT, class traits&gt;
+  basic_istream&lt;charT, traits&gt;& operator&gt;&gt;(basic_istream&lt;charT, traits&gt;&, charT&);
+<del>template&lt;class traits&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;&, unsigned char&);
+template&lt;class traits&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;&, signed char&);</del>
+
+</pre>
+
+<i>Effects:</i> Behaves like a formatted input member (as described in [istream.formatted.reqmts]) of `in`.
+A character is extracted from `in`, if one is available, and stored in `c`.
+Otherwise, `ios_base​::​failbit` is set in the input function's local error state before `setstate` is called.
+
+<i>Returns:</i> `in`.
+
+Modify [[ostream.general](https://eel.is/c++draft/ostream.general)] p1:
+----------------------------------------------------------------------
+
+<pre highlight=cpp>
+
+// ...
+
+// [ostream.inserters.character], character inserters
+template&lt;class charT, class traits&gt;
+  basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&, charT);
+template&lt;class charT, class traits&gt;
+  basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&, char);
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, char);
+
+<del>template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, signed char);
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, unsigned char);</del>
+
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, wchar_t) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, char8_t) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, char16_t) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, char32_t) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;wchar_t, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;wchar_t, traits&gt;&, char8_t) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;wchar_t, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;wchar_t, traits&gt;&, char16_t) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;wchar_t, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;wchar_t, traits&gt;&, char32_t) = delete;
+
+template&lt;class charT, class traits&gt;
+  basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&, const charT*);
+template&lt;class charT, class traits&gt;
+  basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&, const char*);
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const char*);
+
+<del>template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const signed char*);
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const unsigned char*);</del>
+
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const wchar_t*) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const char8_t*) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const char16_t*) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const char32_t*) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;wchar_t, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;wchar_t, traits&gt;&, const char8_t*) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;wchar_t, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;wchar_t, traits&gt;&, const char16_t*) = delete;
+template&lt;class traits&gt;
+  basic_ostream&lt;wchar_t, traits&gt;&
+    operator&lt;&lt;(basic_ostream&lt;wchar_t, traits&gt;&, const char32_t*) = delete;
+
+// ...
+
+</pre>
+
+Modify [[ostream.inserters.character](https://eel.is/c++draft/ostream.inserters.character)]:
+-------------------------------------------------------------------------------------------
+
+<pre highlight=cpp>
+
+template&lt;class charT, class traits&gt;
+  basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&, charT);
+template&lt;class charT, class traits&gt;
+  basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&, char);
+// specialization
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, char);
+// signed and unsigned
+<del>template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, signed char);
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, unsigned char);</del>
+
+</pre>
+
+<i>Effects:</i> Behaves as a formatted output function of `out`.
+Constructs a character sequence `seq`.
+If `c` has type `char` and the character container type of the stream is not `char`,
+then `seq` consists of `out.widen(c)`; otherwise `seq` consists of `c`.
+Determines padding for `seq` as described in [ostream.formatted.reqmts].
+Inserts `seq` into `out`.
+Calls `os.width(0)`.
+
+<i>Returns:</i> `out`.
+
+<pre highlight=cpp>
+
+template&lt;class charT, class traits&gt;
+  basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&, const charT*);
+template&lt;class charT, class traits&gt;
+  basic_ostream&lt;charT, traits&gt;& operator&lt;&lt;(basic_ostream&lt;charT, traits&gt;&, const char*);
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const char*);
+<del>template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const signed char*);
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;&, const unsigned char*);</del>
+
+</pre>
+
+<i>Preconditions:</i> `s` is not a null pointer.
+
+<i>Effects:</i> Behaves like a formatted inserter (as described in [ostream.formatted.reqmts]) of `out`.
+Creates a character sequence `seq` of `n` characters starting at `s`, each widened using `out.widen()` ([basic.ios.members]),
+where `n` is the number that would be computed as if by:
+
+ - `traits​::​length(s)` for the overload where the first argument is of type `basic_ostream<charT, traits>&` and
+    the second is of type `const charT*`, and also for the overload where the first argument is of type `basic_ostream<char, traits>&`
+    and the second is of type `const char*`,
+ - `char_traits<char>​::​length(s)` for the overload where the first argument is of type `basic_ostream<charT, traits>&` and
+    the second is of type `const char*`<ins>.</ins><del>,</del>
+ - <del>`traits​::​length(reinterpret_cast<const char*>(s))` for the other two overloads.</del>
+
+Determines padding for `seq` as described in [ostream.formatted.reqmts].
+Inserts `seq` into `out`.
+Calls `width(0)`.
+
+<i>Returns:</i> `out`.
+
+Add a new subclause in Annex D after [[depr.atomics](https://eel.is/c++draft/depr.atomics)]:
+-------------------------------------------------------------------------------------------
+
+<b>Deprecated `signed char` and `unsigned char` extraction [depr.istream.extractors]</b>
+
+The following function overloads are declared in addition to those specified in [[istream.extractors](https://eel.is/c++draft/istream.extractors)]:
+
+<pre highlight=cpp>
+
+template&lt;class traits&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;& in, unsigned char& c);
+template&lt;class traits&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;& in, signed char& c);
+
+</pre>
+
+<i>Effects:</i> Behaves like a formatted input member (as described in [istream.formatted.reqmts]) of `in`.
+A character is extracted from `in`, if one is available, and stored in `c`.
+Otherwise, `ios_base​::​failbit` is set in the input function's local error state before `setstate` is called.
+
+<i>Returns:</i> `in`.
+
+<pre highlight=cpp>
+
+template&lt;class traits, size_t N&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;& in, unsigned char(&)&lsqb;N&rsqb; s);
+template&lt;class traits, size_t N&gt;
+  basic_istream&lt;char, traits&gt;& operator&gt;&gt;(basic_istream&lt;char, traits&gt;& in, signed char(&)&lsqb;N&rsqb; s);
+
+</pre>
+
+<i>Effects:</i> Behaves like a formatted input member (as described in [istream.formatted.reqmts]) of `in`.
+After a sentry object is constructed, `operator>>` extracts characters and stores them into `s`.
+If `width()` is greater than zero, `n` is `min(size_t(width()), N)`.
+Otherwise `n` is `N`.
+`n` is the maximum number of characters stored.
+
+Characters are extracted and stored until any of the following occurs:
+
+ - `n-1` characters are stored;
+ - end of file occurs on the input sequence;
+ - letting `ct` be `use_facet<ctype<charT>>(in.getloc())`, `ct.is(ct.space, c)` is `true`.
+
+`operator>>` then stores a null byte (`charT()`) in the next position, which may be the first position if no characters were extracted.
+`operator>>` then calls `width(0)`.
+
+If the function extracted no characters, `ios_base​::​failbit` is set in the input function's local error state before `setstate` is called.
+
+<i>Returns:</i> `in`.
+
+Add a new subclause in Annex D after the above ([depr.istream.extractors]):
+--------------------------------------------------------------------------
+
+<b>Deprecated `signed char` and `unsigned char` insertion [depr.ostream.inserters]</b>
+
+The following function overloads are declared in addition to those specified in [[ostream.inserters](https://eel.is/c++draft/ostream.inserters.character)]:
+
+<pre highlight=cpp>
+
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;& out, signed char c);
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;& out, unsigned char c);
+
+</pre>
+
+<i>Effects:</i> Equivalent to `return out << static_cast<char>(c);`.
+
+<pre highlight=cpp>
+
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;& out, const signed char* s);
+template&lt;class traits&gt;
+  basic_ostream&lt;char, traits&gt;& operator&lt;&lt;(basic_ostream&lt;char, traits&gt;& out, const unsigned char* s);
+
+</pre>
+
+<i>Effects:</i> Equivalent to `return out << reinterpret_cast<const char*>(s);`.
