@@ -1564,7 +1564,7 @@ Possible extra rowspan handling
   <meta content="Bikeshed version 4416b18d5, updated Tue Jan 2 15:52:39 2024 -0800" name="generator">
   <link href="http://wg21.link/P3154R0.html" rel="canonical">
   <link href="https://isocpp.org/favicon.ico" rel="icon">
-  <meta content="32717691cd1084d80052b25f1bb4691e2867632f" name="revision">
+  <meta content="3d645e5d9d0e002b3b9e688da3a3d8f2cd1a1943" name="revision">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2182,8 +2182,8 @@ Per <a href="https://eel.is/c++draft/basic.fundamental#11">[basic.fundamental</a
    <blockquote>
     <p>The types <code class="highlight"><c- b>char</c-></code>, <code class="highlight"><c- b>wchar_t</c-></code>, <code class="highlight"><c- b>char8_t</c-></code>, <code class="highlight"><c- b>char16_t</c-></code>, and <code class="highlight"><c- b>char32_t</c-></code> are collectively called <i>character types</i>.</p>
    </blockquote>
-   <p><code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> are included in the set of <i>ordinary character types</i> and <i>narrow character types</i>, but these definitions are used for specifying
-alignment, padding, and <i>indeterminate values</i> (<a href="https://eel.is/c++draft/basic.indet">[basic.indet</a>]),
+   <p><code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> are included in the set of <i>ordinary character types</i> and <i>narrow character types</i> (<a href="https://eel.is/c++draft/basic.fundamental#7">[basic.fundamental</a>] p7),
+but these definitions are used for specifying alignment, padding, and <i>indeterminate values</i> (<a href="https://eel.is/c++draft/basic.indet">[basic.indet</a>]),
 and are arguably not related to characters in the sense of pieces of text.</p>
    <p><code class="highlight"><c- n>std</c-><c- o>::</c-><c- n>format</c-></code> has already taken a step in the right direction here,
 by treating <code class="highlight"><c- b>signed</c-> <c- b>char</c-></code> and <code class="highlight"><c- b>unsigned</c-> <c- b>char</c-></code> as integers.

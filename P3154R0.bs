@@ -78,8 +78,9 @@ Per [[basic.fundamental](https://eel.is/c++draft/basic.fundamental#11)] p11, sin
 > The types `char`, `wchar_t`, `char8_t`, `char16_t`, and `char32_t` are collectively called <i>character types</i>.
 
 `signed char` and `unsigned char` are included in the set of <i>ordinary character types</i>
-and <i>narrow character types</i>, but these definitions are used for specifying
-alignment, padding, and <i>indeterminate values</i> ([[basic.indet](https://eel.is/c++draft/basic.indet)]),
+and <i>narrow character types</i> ([[basic.fundamental](https://eel.is/c++draft/basic.fundamental#7)] p7),
+but these definitions are used for specifying alignment, padding, and <i>indeterminate values</i>
+([[basic.indet](https://eel.is/c++draft/basic.indet)]),
 and are arguably not related to characters in the sense of pieces of text.
 
 `std::format` has already taken a step in the right direction here,
